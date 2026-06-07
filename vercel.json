@@ -1,0 +1,4 @@
+{
+  "buildCommand": "echo 'Build skipped: serving static assets and API functions'",
+  "outputDirectory": "."
+}
