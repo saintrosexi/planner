@@ -628,28 +628,198 @@
     </div>
   </div>
 
-  <!-- Mobile Floating Add Button -->
-  <button id="btn-mobile-fab" class="mobile-fab" style="display: none;">+</button>
+  <!-- Dedicated iOS Mobile Application Container -->
+  <div id="mobile-app-root" style="display: none;">
+    <!-- iOS Navigation Bar -->
+    <header class="ios-nav-bar">
+      <button id="mobile-nav-left-btn" class="ios-nav-btn" style="visibility: hidden;">← Списки</button>
+      <h1 id="mobile-nav-title" class="ios-nav-title">Напоминания</h1>
+      <button id="mobile-nav-right-btn" class="ios-nav-btn" style="visibility: hidden;">Изменить</button>
+    </header>
 
-  <!-- Mobile Bottom Tab Bar -->
-  <nav class="mobile-tab-bar" style="display: none;">
-    <button class="mobile-tab-item active" data-tab="editor">
-      <span class="tab-icon">📥</span>
-      <span class="tab-label">Сегодня</span>
-    </button>
-    <button class="mobile-tab-item" data-tab="folders">
-      <span class="tab-icon">📂</span>
-      <span class="tab-label">Списки</span>
-    </button>
-    <button class="mobile-tab-item" data-tab="profile">
-      <span class="tab-icon">🤖</span>
-      <span class="tab-label">Бот</span>
-    </button>
-    <button class="mobile-tab-item" data-tab="settings">
-      <span class="tab-icon">⚙️</span>
-      <span class="tab-label">Настройки</span>
-    </button>
-  </nav>
+    <!-- Mobile View Panels Container -->
+    <main class="ios-main-content">
+      <!-- 1. Mobile Home View (Apple Reminders style) -->
+      <div id="m-panel-home" class="m-panel active">
+        <!-- Search Bar -->
+        <div class="ios-search-container">
+          <input type="text" id="mobile-search-input" placeholder="Поиск" autocomplete="off" />
+        </div>
+
+        <!-- 2x2 Grid Widgets -->
+        <div class="ios-widget-grid">
+          <!-- Widget: Today -->
+          <div class="ios-widget-card" id="m-widget-today" data-smart="today">
+            <div class="widget-header">
+              <div class="widget-icon-wrap" style="background-color: #0a84ff;">📅</div>
+              <span class="widget-count" id="m-count-today">0</span>
+            </div>
+            <span class="widget-label">Сегодня</span>
+          </div>
+
+          <!-- Widget: All -->
+          <div class="ios-widget-card" id="m-widget-all" data-smart="all">
+            <div class="widget-header">
+              <div class="widget-icon-wrap" style="background-color: #8e8e93;">📥</div>
+              <span class="widget-count" id="m-count-all">0</span>
+            </div>
+            <span class="widget-label">Все</span>
+          </div>
+
+          <!-- Widget: Completed -->
+          <div class="ios-widget-card" id="m-widget-completed" data-smart="completed">
+            <div class="widget-header">
+              <div class="widget-icon-wrap" style="background-color: #30d158;">✅</div>
+              <span class="widget-count" id="m-count-completed">0</span>
+            </div>
+            <span class="widget-label">Завершено</span>
+          </div>
+
+          <!-- Widget: Telegram Cloud -->
+          <div class="ios-widget-card" id="m-widget-telegram" data-smart="telegram">
+            <div class="widget-header">
+              <div class="widget-icon-wrap" style="background-color: #55a8fd;">🤖</div>
+              <span class="widget-status-dot" id="m-tg-status-dot"></span>
+            </div>
+            <span class="widget-label" id="m-tg-status-text">Бот выкл.</span>
+          </div>
+        </div>
+
+        <!-- Inset List Header -->
+        <h2 class="ios-section-header">Мои списки</h2>
+
+        <!-- Grouped Folder List -->
+        <div class="ios-inset-group" id="m-folders-list">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Footer actions -->
+        <div class="ios-footer-actions">
+          <button id="m-btn-new-task" class="ios-footer-btn">
+            <span class="plus-circle">+</span> Новое напоминание
+          </button>
+          <button id="m-btn-add-list" class="ios-footer-btn">Добавить список</button>
+        </div>
+      </div>
+
+      <!-- 2. Mobile List Details View -->
+      <div id="m-panel-list-detail" class="m-panel">
+        <div class="m-list-detail-header">
+          <h2 id="m-list-title" style="color: #0a84ff;">Название списка</h2>
+          <span id="m-list-subtitle" class="m-list-subtitle">0 напоминаний</span>
+        </div>
+        
+        <div class="m-list-tasks-container">
+          <div id="m-list-tasks-list">
+            <!-- Dynamic task rows inside folder -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Mobile Telegram Profile View (iOS settings layout) -->
+      <div id="m-panel-profile" class="m-panel">
+        <!-- Profile status group -->
+        <div class="ios-section-header">Telegram бот</div>
+        <div class="ios-inset-group">
+          <div class="ios-settings-row">
+            <span class="row-label">Состояние</span>
+            <span class="row-value" id="m-tg-status-val">Отключен</span>
+          </div>
+          <div class="ios-settings-row" id="m-tg-username-row" style="display: none;">
+            <span class="row-label">Имя пользователя</span>
+            <span class="row-value" id="m-tg-username-val">-</span>
+          </div>
+          <div class="ios-settings-row" id="m-tg-chatid-row" style="display: none;">
+            <span class="row-label">ID чата (Chat ID)</span>
+            <span class="row-value" id="m-tg-chatid-val">-</span>
+          </div>
+        </div>
+
+        <!-- Notification timings -->
+        <div class="ios-section-header">Настройки уведомлений</div>
+        <div class="ios-inset-group">
+          <div class="ios-settings-row">
+            <span class="row-label">Утренний отчет</span>
+            <input type="time" id="m-tg-morning-time" class="ios-time-picker" />
+          </div>
+          <div class="ios-settings-row">
+            <span class="row-label">Вечерний отчет</span>
+            <input type="time" id="m-tg-evening-time" class="ios-time-picker" />
+          </div>
+          <div class="ios-settings-row select-row">
+            <span class="row-label">Доступ к БД из чата</span>
+            <label class="ios-switch">
+              <input type="checkbox" id="m-chk-tg-db-access" />
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Unlink Action -->
+        <div class="ios-inset-group" id="m-tg-unlink-box" style="display: none;">
+          <button id="m-btn-tg-unlink" class="ios-action-btn danger">Отключить Telegram-бота</button>
+        </div>
+
+        <!-- Connection instructions (when disconnected) -->
+        <div id="m-tg-login-box" style="display: none;">
+          <div class="ios-section-header">Подключение бота</div>
+          <div class="ios-inset-group" style="padding: 14px;">
+            <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin: 0 0 12px 0;">
+              Для подключения введите API токен вашего бота.
+            </p>
+            <div class="form-group" style="margin-bottom: 12px; border: none; background: transparent; padding: 0;">
+              <input type="text" id="m-tg-token-input" placeholder="API Token бота" style="width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);" autocomplete="off" />
+            </div>
+            <button id="m-btn-tg-connect" class="ios-action-btn primary" style="width: 100%;">Связать аккаунт</button>
+          </div>
+
+          <!-- Code verification overlay -->
+          <div id="m-tg-auth-code-box" class="ios-inset-group" style="display: none; padding: 14px; flex-direction: column; gap: 10px;">
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Отправьте этот код вашему боту:</span>
+            <div id="m-tg-auth-code" style="font-size: 1.8rem; font-weight: 700; text-align: center; font-family: monospace; letter-spacing: 0.1em; color: #0a84ff; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1);">------</div>
+            <a id="m-tg-deep-link" href="#" target="_blank" class="ios-action-btn primary" style="text-align: center; text-decoration: none; display: block;">⚡ Открыть Telegram</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Mobile settings View -->
+      <div id="m-panel-settings" class="m-panel">
+        <!-- Tags Manager -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 16px;">
+          <div class="ios-section-header" style="margin: 0; padding: 16px 0 8px 0;">Теги</div>
+          <button id="m-btn-add-tag" class="ios-small-add-btn">+ Добавить</button>
+        </div>
+        <div class="ios-inset-group" id="m-tags-manager-list">
+          <!-- Dynamic tags lists -->
+        </div>
+
+        <!-- Outcomes Manager -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 16px; margin-top: 16px;">
+          <div class="ios-section-header" style="margin: 0; padding: 16px 0 8px 0;">Исходы CRM</div>
+          <button id="m-btn-add-outcome" class="ios-small-add-btn">+ Добавить</button>
+        </div>
+        <div class="ios-inset-group" id="m-outcomes-manager-list">
+          <!-- Dynamic outcomes lists -->
+        </div>
+      </div>
+    </main>
+
+    <!-- iOS Translucent Tab Bar -->
+    <nav class="ios-tab-bar">
+      <button class="ios-tab-item active" data-tab="home">
+        <span class="tab-icon">📋</span>
+        <span class="tab-label">Списки</span>
+      </button>
+      <button class="ios-tab-item" data-tab="profile">
+        <span class="tab-icon">🤖</span>
+        <span class="tab-label">Бот</span>
+      </button>
+      <button class="ios-tab-item" data-tab="settings">
+        <span class="tab-icon">⚙️</span>
+        <span class="tab-label">Настройки</span>
+      </button>
+    </nav>
+  </div>
 
   <!-- Copy Notification Bubble -->
   <div id="copy-toast" class="copy-toast">Скопировано в буфер обмена!</div>

@@ -1667,132 +1667,379 @@ body.web-app .app-container {
 
 /* Responsive Media Queries (Mobile & Tablets) */
 @media (max-width: 768px) {
+  /* Hide all desktop containers */
+  #app-container {
+    display: none !important;
+  }
+  .titlebar {
+    display: none !important;
+  }
   .mobile-header {
+    display: none !important;
+  }
+  
+  /* Mobile Root Layout */
+  #mobile-app-root {
+    display: flex !important;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #000000; /* True iOS pure black background */
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 99999;
+  }
+
+  /* iOS Nav Bar */
+  .ios-nav-bar {
     display: flex;
-  }
-  
-  body.web-app .app-container {
-    height: calc(100vh - 50px) !important;
-  }
-  
-  /* Slide-out Sidebar Drawer */
-  .sidebar {
-    position: fixed;
-    top: 50px;
-    left: -260px;
-    bottom: 0;
-    width: 250px;
-    z-index: 9999;
-    background-color: var(--bg-secondary);
-    box-shadow: var(--shadow-lg);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  body.menu-open .sidebar {
-    transform: translateX(260px);
-  }
-  
-  body.menu-open .sidebar-overlay {
-    display: block;
-  }
-  
-  /* Content panels optimization */
-  .view-panel {
-    padding: 16px 12px !important;
-  }
-  
-  /* Font size reduction for small screens */
-  h2 {
-    font-size: 1.45rem !important;
-  }
-  
-  #editor-title {
-    font-size: 1.7rem !important;
-  }
-  
-  #editor-description {
-    font-size: 0.95rem !important;
-  }
-  
-  .editor-paper {
-    padding-left: 12px !important;
-  }
-  
-  /* Settings page columns folding */
-  .settings-grid {
-    grid-template-columns: 1fr !important;
-    gap: 16px !important;
-  }
-  
-  /* Folder stats cards scaling */
-  .folder-stats {
-    gap: 8px !important;
-  }
-  
-  .stat-card {
-    padding: 12px 10px !important;
-  }
-  
-  .stat-value {
-    font-size: 1.3rem !important;
-  }
-  
-  /* Item cards styling tweaks */
-  .item-card {
-    padding: 12px 14px !important;
-    gap: 12px !important;
-  }
-  
-  .item-title {
-    font-size: 0.95rem !important;
-  }
-
-  /* Hide sidebar drawer entirely on mobile */
-  .sidebar {
-    display: none !important;
-  }
-  .sidebar-overlay {
-    display: none !important;
-  }
-  body.menu-open .sidebar {
-    transform: none !important;
-  }
-  
-  /* Reset app container padding for bottom tab bar and mobile header */
-  .app-container {
-    height: calc(100vh - 50px - 64px) !important; /* height minus header and bottom tab bar */
-    margin-top: 50px;
-  }
-  
-  body.web-app .app-container {
-    height: calc(100vh - 50px - 64px) !important;
-  }
-  
-  .content-area {
-    padding-bottom: 24px;
-    overflow-y: auto;
-  }
-
-  /* Mobile bottom tab bar styling */
-  .mobile-tab-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 64px;
-    background: rgba(18, 20, 28, 0.85);
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    padding: 0 16px;
+    background: rgba(18, 18, 18, 0.8);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-top: 1px solid var(--border-color);
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.15);
+    flex-shrink: 0;
+  }
+  .ios-nav-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+  }
+  .ios-nav-btn {
+    background: none;
+    border: none;
+    color: #0a84ff; /* iOS blue link */
+    font-size: 1rem;
+    font-weight: 400;
+    cursor: pointer;
+    padding: 8px 0;
+    outline: none;
+    min-width: 60px;
+    text-align: left;
+  }
+  .ios-nav-btn:last-child {
+    text-align: right;
+  }
+
+  /* Content area */
+  .ios-main-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-bottom: 80px; /* Safe space for tab bar */
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .m-panel {
+    display: none;
+    flex-direction: column;
+    min-height: 100%;
+    animation: fadeIn 0.2s ease-in-out;
+  }
+  .m-panel.active {
+    display: flex;
+  }
+
+  /* Search Container */
+  .ios-search-container {
+    padding: 12px 16px 8px 16px;
+  }
+  #mobile-search-input {
+    width: 100%;
+    height: 36px;
+    background: #1c1c1e;
+    border: none;
+    border-radius: 10px;
+    padding: 0 12px 0 32px;
+    color: #ffffff;
+    font-size: 0.95rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%238e8e93' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 10px center;
+  }
+
+  /* iOS Grid Widgets */
+  .ios-widget-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 8px 16px 16px 16px;
+  }
+  .ios-widget-card {
+    background: #1c1c1e;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 82px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+  .ios-widget-card:active {
+    background: #2c2c2e;
+  }
+  .ios-widget-card .widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+  }
+  .ios-widget-card .widget-icon-wrap {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: #ffffff;
+  }
+  .ios-widget-card .widget-count {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1;
+  }
+  .ios-widget-card .widget-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ff453a; /* Default red (Disconnected) */
+    margin-top: 10px;
+  }
+  .ios-widget-card .widget-status-dot.connected {
+    background-color: #30d158; /* Green (Connected) */
+    box-shadow: 0 0 8px rgba(48, 209, 88, 0.4);
+  }
+  .ios-widget-card .widget-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #8e8e93;
+  }
+
+  /* Section Header */
+  .ios-section-header {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 16px 16px 8px 16px;
+  }
+
+  /* Inset Grouped layout */
+  .ios-inset-group {
+    background: #1c1c1e;
+    border-radius: 12px;
+    margin: 0 16px 16px 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Inset List row style */
+  .ios-settings-row, .ios-list-row {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1c1c1e;
+    cursor: pointer;
+    min-height: 48px;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.05);
+    transition: background-color 0.15s;
+    text-decoration: none;
+  }
+  .ios-settings-row:active, .ios-list-row:active {
+    background-color: #2c2c2e;
+  }
+  .ios-settings-row:last-child, .ios-list-row:last-child {
+    border-bottom: none;
+  }
+  
+  .ios-list-icon-wrap {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    margin-right: 12px;
+    color: #ffffff;
+  }
+  
+  .ios-list-label {
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: #ffffff;
+    flex-grow: 1;
+    text-align: left;
+  }
+  .ios-list-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ios-list-badge {
+    background: transparent;
+    color: #8e8e93;
+    font-size: 0.95rem;
+  }
+  .ios-list-chevron {
+    color: #48484a;
+    font-size: 1.1rem;
+    margin-left: 2px;
+  }
+
+  /* Settings details inside rows */
+  .row-label {
+    font-size: 0.95rem;
+    color: #ffffff;
+  }
+  .row-value {
+    font-size: 0.95rem;
+    color: #8e8e93;
+  }
+
+  /* Time Picker */
+  .ios-time-picker {
+    background: transparent !important;
+    border: none !important;
+    color: #0a84ff !important;
+    font-size: 0.95rem !important;
+    font-weight: 500;
+    padding: 0 !important;
+    text-align: right;
+    cursor: pointer;
+    width: auto !important;
+    outline: none;
+  }
+
+  /* Switches (Apple toggles) */
+  .ios-switch {
+    position: relative;
+    display: inline-block;
+    width: 51px;
+    height: 31px;
+    flex-shrink: 0;
+  }
+  .ios-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #3a3a3c;
+    transition: .3s;
+    border-radius: 34px;
+  }
+  .switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 27px;
+    width: 27px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  }
+  .ios-switch input:checked + .switch-slider {
+    background-color: #30d158; /* iOS Green toggle */
+  }
+  .ios-switch input:checked + .switch-slider:before {
+    transform: translateX(20px);
+  }
+
+  /* Action Buttons */
+  .ios-action-btn {
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    padding: 14px 16px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    width: 100%;
+    outline: none;
+  }
+  .ios-action-btn.primary {
+    color: #0a84ff;
+  }
+  .ios-action-btn.danger {
+    color: #ff453a;
+  }
+  
+  .ios-small-add-btn {
+    background: none;
+    border: none;
+    color: #0a84ff;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* Footer actions */
+  .ios-footer-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    margin-top: auto;
+  }
+  .ios-footer-btn {
+    background: none;
+    border: none;
+    color: #0a84ff;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    outline: none;
+  }
+  .ios-footer-btn .plus-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #0a84ff;
+    color: #ffffff;
+    font-size: 0.9rem;
+    line-height: 1;
+    font-weight: 700;
+  }
+
+  /* iOS Tab Bar */
+  .ios-tab-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 64px;
+    background: rgba(18, 18, 18, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 0.5px solid rgba(255, 255, 255, 0.15);
     display: flex !important;
     justify-content: space-around;
     align-items: center;
-    z-index: 9999;
+    z-index: 999999;
     padding-bottom: env(safe-area-inset-bottom, 8px);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
   }
-  
-  .mobile-tab-item {
+  .ios-tab-item {
     background: none;
     border: none;
     display: flex;
@@ -1800,148 +2047,49 @@ body.web-app .app-container {
     align-items: center;
     justify-content: center;
     gap: 4px;
-    color: var(--text-muted);
+    color: #8e8e93;
     cursor: pointer;
     flex: 1;
     height: 100%;
-    transition: color 0.2s, transform 0.1s;
     outline: none;
+    transition: color 0.15s;
   }
-  
-  .mobile-tab-item:active {
-    transform: scale(0.95);
+  .ios-tab-item.active {
+    color: #0a84ff;
   }
-  
-  .mobile-tab-item.active {
-    color: var(--accent);
-  }
-  
-  .mobile-tab-item .tab-icon {
+  .ios-tab-item .tab-icon {
     font-size: 1.35rem;
+    line-height: 1;
   }
-  
-  .mobile-tab-item .tab-label {
+  .ios-tab-item .tab-label {
     font-size: 0.72rem;
     font-weight: 500;
   }
 
-  /* Mobile Floating Action Button */
-  .mobile-fab {
-    display: flex !important;
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--accent-gradient);
-    color: white;
-    border: none;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    font-weight: 300;
-    box-shadow: 0 8px 24px var(--accent-glow);
-    z-index: 9998;
-    cursor: pointer;
-    transition: transform 0.2s;
+  /* Task row detail layouts */
+  .m-list-detail-header {
+    padding: 24px 16px 12px 16px;
   }
-  
-  .mobile-fab:active {
-    transform: scale(0.9);
+  #m-list-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
   }
-
-  /* Mobile header back button and layout */
-  .mobile-back-btn {
-    background: none;
-    border: none;
-    color: var(--text-main);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 4px 8px;
-    margin-right: 8px;
-    outline: none;
+  .m-list-subtitle {
+    font-size: 0.88rem;
+    color: #8e8e93;
+    font-weight: 500;
   }
-  
-  .mobile-header {
-    background: rgba(10, 11, 16, 0.8);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-bottom: 1px solid var(--border-color);
-    padding: 0 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 50px;
-    z-index: 10000;
+  .m-list-tasks-container {
+    padding: 8px 16px;
   }
-
-  /* iOS style List Views for mobile folders list */
-  .mobile-folders-list {
+  #m-list-tasks-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 4px;
-  }
-  
-  .ios-list-row {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-  }
-  
-  .ios-list-row:active {
-    background-color: var(--bg-glass-hover);
-    transform: scale(0.99);
-  }
-  
-  .ios-list-icon-wrap {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    margin-right: 12px;
-  }
-  
-  .ios-list-label {
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--text-main);
-    flex-grow: 1;
-  }
-  
-  .ios-list-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .ios-list-badge {
-    background-color: rgba(255, 255, 255, 0.08);
-    border: 1px solid var(--border-color);
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--text-muted);
-  }
-  
-  .ios-list-chevron {
-    color: var(--text-muted);
-    font-size: 1.2rem;
-    font-weight: 300;
-    line-height: 1;
+    gap: 12px;
   }
 
-  /* iOS style Bottom Sheets */
+  /* Modal bottom sheets overrides inside query */
   .modal-overlay {
     align-items: flex-end !important;
     padding: 0 !important;
@@ -1958,8 +2106,7 @@ body.web-app .app-container {
     border-top: 1px solid var(--border-color) !important;
     max-height: 85vh !important;
     overflow-y: auto !important;
-    background-color: var(--bg-secondary) !important;
-    
+    background-color: #1c1c1e !important; /* iOS sheet background */
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94) !important;
   }
@@ -1977,17 +2124,7 @@ body.web-app .app-container {
     margin: 0 auto 16px auto;
   }
 
-  /* Hide the desktop inline task editor input area on mobile viewports */
-  .editor-paper {
-    display: none !important;
-  }
-
-  /* Task cards: Circular checkboxes for Apple Reminders feel */
-  .checkbox-container {
-    border-radius: 50% !important;
-  }
-
-  /* Grouped list forms inside Bottom Sheets (iOS Settings Look) */
+  /* Form groups inside sheets look exactly like settings cells */
   .modal-card .form-group {
     background: rgba(255, 255, 255, 0.035) !important;
     border-radius: 12px !important;
@@ -1999,7 +2136,7 @@ body.web-app .app-container {
     font-size: 0.74rem !important;
     text-transform: uppercase !important;
     letter-spacing: 0.06em !important;
-    color: var(--text-muted) !important;
+    color: #8e8e93 !important;
     margin-bottom: 6px !important;
     display: block !important;
     font-weight: 600 !important;
@@ -2010,82 +2147,16 @@ body.web-app .app-container {
     background: transparent !important;
     border: none !important;
     padding: 6px 0 0 0 !important;
-    color: var(--text-main) !important;
+    color: #ffffff !important;
     font-size: 1rem !important;
     width: 100% !important;
     border-radius: 0 !important;
-    font-family: var(--font-main) !important;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
   }
   .modal-card .form-group input:focus,
   .modal-card .form-group textarea:focus {
     box-shadow: none !important;
     outline: none !important;
-  }
-
-  /* iOS navigation Push & Pop view animations */
-  @keyframes iosSlidePush {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  @keyframes iosSlidePop {
-    from { transform: translateX(-15%); opacity: 0.8; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  #view-folder.active {
-    animation: iosSlidePush 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94) forwards !important;
-  }
-  #view-mobile-folders.active {
-    animation: iosSlidePop 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94) forwards !important;
-  }
-
-  /* Folder detail header & stats cards in iOS Widget style */
-  .folder-stats {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 10px !important;
-    margin-bottom: 20px !important;
-  }
-  .stat-card {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.04) !important;
-    border-radius: 12px !important;
-    padding: 12px 8px !important;
-    text-align: center !important;
-    flex: none !important;
-  }
-
-  /* Tab Bar item accent color matching iOS */
-  .mobile-tab-item.active {
-    color: #007aff !important;
-  }
-  
-  /* Settings card styling improvements on mobile */
-  .card.settings-card {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.04) !important;
-    border-radius: 12px !important;
-    padding: 16px !important;
-    margin-bottom: 16px !important;
-  }
-  
-  /* Mobile header visual polish */
-  .mobile-header {
-    background: rgba(10, 11, 16, 0.85) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border-bottom: 1px solid var(--border-color) !important;
-    padding: 0 16px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    height: 52px !important;
-  }
-  .mobile-title {
-    font-size: 1.2rem !important;
-    font-weight: 700 !important;
-    background: linear-gradient(180deg, #ffffff 0%, #a5b4fc 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
   }
 }
 

@@ -327,7 +327,47 @@ const el = {
   contextMenuList: document.getElementById('context-menu-list'),
 
   // Toast
-  copyToast: document.getElementById('copy-toast')
+  copyToast: document.getElementById('copy-toast'),
+
+  // Dedicated iOS Mobile Root elements
+  mobileAppRoot: document.getElementById('mobile-app-root'),
+  mPanelHome: document.getElementById('m-panel-home'),
+  mPanelListDetail: document.getElementById('m-panel-list-detail'),
+  mPanelProfile: document.getElementById('m-panel-profile'),
+  mPanelSettings: document.getElementById('m-panel-settings'),
+  mobileSearchInput: document.getElementById('mobile-search-input'),
+  mCountToday: document.getElementById('m-count-today'),
+  mCountAll: document.getElementById('m-count-all'),
+  mCountCompleted: document.getElementById('m-count-completed'),
+  mWidgetTelegram: document.getElementById('m-widget-telegram'),
+  mFoldersList: document.getElementById('m-folders-list'),
+  mBtnNewTask: document.getElementById('m-btn-new-task'),
+  mBtnAddList: document.getElementById('m-btn-add-list'),
+  mListTitle: document.getElementById('m-list-title'),
+  mListSubtitle: document.getElementById('m-list-subtitle'),
+  mListTasksList: document.getElementById('m-list-tasks-list'),
+  mTgStatusVal: document.getElementById('m-tg-status-val'),
+  mTgUsernameRow: document.getElementById('m-tg-username-row'),
+  mTgUsernameVal: document.getElementById('m-tg-username-val'),
+  mTgChatIdRow: document.getElementById('m-tg-chatid-row'),
+  mTgChatIdVal: document.getElementById('m-tg-chatid-val'),
+  mTgMorningTime: document.getElementById('m-tg-morning-time'),
+  mTgEveningTime: document.getElementById('m-tg-evening-time'),
+  mChkTgDbAccess: document.getElementById('m-chk-tg-db-access'),
+  mTgUnlinkBox: document.getElementById('m-tg-unlink-box'),
+  mBtnTgUnlink: document.getElementById('m-btn-tg-unlink'),
+  mTgLoginBox: document.getElementById('m-tg-login-box'),
+  mTgTokenInput: document.getElementById('m-tg-token-input'),
+  mBtnTgConnect: document.getElementById('m-btn-tg-connect'),
+  mTgAuthCodeBox: document.getElementById('m-tg-auth-code-box'),
+  mTgAuthCode: document.getElementById('m-tg-auth-code'),
+  mTgDeepLink: document.getElementById('m-tg-deep-link'),
+  mBtnAddTag: document.getElementById('m-btn-add-tag'),
+  mTagsManagerList: document.getElementById('m-tags-manager-list'),
+  mBtnAddOutcome: document.getElementById('m-btn-add-outcome'),
+  mOutcomesManagerList: document.getElementById('m-outcomes-manager-list'),
+  mTgStatusDot: document.getElementById('m-tg-status-dot'),
+  mTgStatusText: document.getElementById('m-tg-status-text')
 };
 
 // --- Initial Startup ---
@@ -609,7 +649,9 @@ async function saveData() {
   renderTodayTasks();
   if (activeView === 'folder' && activeFolderId) {
     renderFolderView(activeFolderId);
+    renderMobileFolderDetail(activeFolderId);
   }
+  renderMobileHome();
 }
 
 // --- Date Helpers ---
@@ -660,65 +702,71 @@ function switchView(viewName, folderId = '') {
   activeView = viewName;
   activeFolderId = folderId;
   
-  // Toggle active class on sidebar items
+  // 1. Desktop Nav & View Toggle
   document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
   
-  if (viewName === 'editor') el.navEditor.classList.add('active');
-  else if (viewName === 'profile') el.navProfile.classList.add('active');
-  else if (viewName === 'settings') el.navSettings.classList.add('active');
-  else if (viewName === 'folder' && folderId) {
-    const fBtn = document.querySelector(`.nav-folder-btn[data-id="${folderId}"]`);
-    if (fBtn) fBtn.classList.add('active');
-  }
-  
-  // Toggle active class on mobile tab bar items
-  document.querySelectorAll('.mobile-tab-item').forEach(btn => {
-    btn.classList.remove('active');
-    if (btn.dataset.tab === viewName) {
-      btn.classList.add('active');
-    } else if ((viewName === 'folder' || viewName === 'mobile-folders') && btn.dataset.tab === 'folders') {
-      btn.classList.add('active');
-    }
-  });
-  
-  // Toggle view panels
-  el.viewEditor.classList.remove('active');
-  el.viewFolder.classList.remove('active');
-  el.viewProfile.classList.remove('active');
-  el.viewSettings.classList.remove('active');
-  if (el.viewMobileFolders) el.viewMobileFolders.classList.remove('active');
-  
-  // Header and Floating Action Button (FAB) config for mobile
-  if (el.btnMobileBack) el.btnMobileBack.style.display = 'none';
-  if (el.btnMobileFab) el.btnMobileFab.style.display = 'none';
-  
-  if (viewName === 'editor') {
+  if (viewName === 'editor' || viewName === 'home') {
+    el.navEditor.classList.add('active');
     el.viewEditor.classList.add('active');
     el.editorTitle.focus();
     renderTodayTasks();
-    if (el.mobileHeaderTitle) el.mobileHeaderTitle.textContent = formatRussianTodayHeader();
-    if (el.btnMobileFab) el.btnMobileFab.style.display = (window.innerWidth <= 768) ? 'flex' : 'none';
-  } else if (viewName === 'folder') {
-    el.viewFolder.classList.add('active');
-    renderFolderView(folderId);
-    if (el.btnMobileBack) el.btnMobileBack.style.display = 'block';
-    if (el.mobileHeaderTitle) {
-      const folder = dbData.folders.find(f => f.id === folderId);
-      el.mobileHeaderTitle.textContent = folder ? folder.name : 'Папка';
-    }
-    if (el.btnMobileFab) el.btnMobileFab.style.display = (window.innerWidth <= 768) ? 'flex' : 'none';
-  } else if (viewName === 'mobile-folders') {
-    if (el.viewMobileFolders) el.viewMobileFolders.classList.add('active');
-    renderMobileFolders();
-    if (el.mobileHeaderTitle) el.mobileHeaderTitle.textContent = 'Списки';
   } else if (viewName === 'profile') {
+    el.navProfile.classList.add('active');
     el.viewProfile.classList.add('active');
     updateTelegramUI();
-    if (el.mobileHeaderTitle) el.mobileHeaderTitle.textContent = 'Профиль';
   } else if (viewName === 'settings') {
+    el.navSettings.classList.add('active');
     el.viewSettings.classList.add('active');
     renderSettingsView();
-    if (el.mobileHeaderTitle) el.mobileHeaderTitle.textContent = 'Настройки';
+  } else if (viewName === 'folder' && folderId) {
+    if (folderId !== 'today' && folderId !== 'all' && folderId !== 'completed') {
+      const fBtn = document.querySelector(`.nav-folder-btn[data-id="${folderId}"]`);
+      if (fBtn) fBtn.classList.add('active');
+      el.viewFolder.classList.add('active');
+      renderFolderView(folderId);
+    } else {
+      // If it's a smart list on desktop, map to editor
+      el.navEditor.classList.add('active');
+      el.viewEditor.classList.add('active');
+      renderTodayTasks();
+    }
+  }
+
+  // 2. Mobile Nav & View Toggle
+  const mobilePanels = [el.mPanelHome, el.mPanelListDetail, el.mPanelProfile, el.mPanelSettings];
+  mobilePanels.forEach(p => { if (p) p.classList.remove('active'); });
+  
+  document.querySelectorAll('.ios-tab-item').forEach(btn => btn.classList.remove('active'));
+  if (el.mobileNavLeftBtn) el.mobileNavLeftBtn.style.visibility = 'hidden';
+  if (el.mobileNavRightBtn) el.mobileNavRightBtn.style.visibility = 'hidden';
+
+  if (viewName === 'editor' || viewName === 'home' || viewName === 'mobile-folders') {
+    if (el.mPanelHome) el.mPanelHome.classList.add('active');
+    const tabHome = document.querySelector('.ios-tab-item[data-tab="home"]');
+    if (tabHome) tabHome.classList.add('active');
+    if (el.mobileNavTitle) el.mobileNavTitle.textContent = 'Напоминания';
+    renderMobileHome();
+  } else if (viewName === 'folder' && folderId) {
+    if (el.mPanelListDetail) el.mPanelListDetail.classList.add('active');
+    const tabHome = document.querySelector('.ios-tab-item[data-tab="home"]');
+    if (tabHome) tabHome.classList.add('active');
+    if (el.mobileNavLeftBtn) {
+      el.mobileNavLeftBtn.style.visibility = 'visible';
+      el.mobileNavLeftBtn.textContent = '← Списки';
+    }
+    renderMobileFolderDetail(folderId);
+  } else if (viewName === 'profile') {
+    if (el.mPanelProfile) el.mPanelProfile.classList.add('active');
+    const tabProfile = document.querySelector('.ios-tab-item[data-tab="profile"]');
+    if (tabProfile) tabProfile.classList.add('active');
+    if (el.mobileNavTitle) el.mobileNavTitle.textContent = 'Telegram бот';
+    renderMobileProfile();
+  } else if (viewName === 'settings') {
+    if (el.mPanelSettings) el.mPanelSettings.classList.add('active');
+    const tabSettings = document.querySelector('.ios-tab-item[data-tab="settings"]');
+    if (tabSettings) tabSettings.classList.add('active');
+    if (el.mobileNavTitle) el.mobileNavTitle.textContent = 'Настройки';
+    renderMobileSettings();
   }
 }
 
@@ -770,12 +818,12 @@ function renderSidebar() {
 }
 
 function renderMobileFolders() {
-  const container = el.mobileFoldersList;
+  const container = document.getElementById('m-folders-list');
   if (!container) return;
   container.innerHTML = '';
   
   if (dbData.folders.length === 0) {
-    container.innerHTML = '<div style="color: var(--text-dark); text-align: center; padding: 40px 16px; font-style: italic; font-size: 0.9rem;">У вас пока нет папок. Нажмите кнопку + выше, чтобы создать папку.</div>';
+    container.innerHTML = '<div style="color: #8e8e93; text-align: center; padding: 40px 16px; font-style: italic; font-size: 0.9rem;">У вас пока нет папок. Нажмите кнопку Добавить список ниже, чтобы создать.</div>';
     return;
   }
   
@@ -821,6 +869,578 @@ function renderMobileFolders() {
     });
     
     container.appendChild(row);
+  });
+}
+
+function renderMobileHome() {
+  const todayCount = dbData.items.filter(item => item.type === 'task' && !item.completed && isToday(item.dateTime)).length;
+  const allCount = dbData.items.filter(item => item.type === 'task' && !item.completed).length;
+  const completedCount = dbData.items.filter(item => item.type === 'task' && item.completed).length;
+  
+  if (el.mCountToday) el.mCountToday.textContent = todayCount;
+  if (el.mCountAll) el.mCountAll.textContent = allCount;
+  if (el.mCountCompleted) el.mCountCompleted.textContent = completedCount;
+  
+  const tg = dbData.settings.telegram;
+  const isLinked = tg && tg.isLinked;
+  if (el.mTgStatusDot) {
+    if (isLinked) el.mTgStatusDot.classList.add('connected');
+    else el.mTgStatusDot.classList.remove('connected');
+  }
+  if (el.mTgStatusText) {
+    el.mTgStatusText.textContent = isLinked ? (tg.username ? tg.username : 'Бот вкл.') : 'Бот выкл.';
+  }
+  
+  renderMobileFolders();
+}
+
+function renderMobileFolderDetail(folderId) {
+  const titleEl = document.getElementById('m-list-title');
+  const subtitleEl = document.getElementById('m-list-subtitle');
+  const container = document.getElementById('m-list-tasks-list');
+  const navTitle = document.getElementById('mobile-nav-title');
+
+  if (!titleEl || !subtitleEl || !container) return;
+
+  container.innerHTML = '';
+  
+  let listTitle = '';
+  let listColor = '#0a84ff';
+  let filteredItems = [];
+
+  if (folderId === 'today') {
+    listTitle = 'Сегодня';
+    listColor = '#0a84ff';
+    filteredItems = dbData.items.filter(item => item.type === 'task' && !item.completed && isToday(item.dateTime));
+  } else if (folderId === 'all') {
+    listTitle = 'Все';
+    listColor = '#8e8e93';
+    filteredItems = dbData.items.filter(item => item.type === 'task' && !item.completed);
+  } else if (folderId === 'completed') {
+    listTitle = 'Завершено';
+    listColor = '#30d158';
+    filteredItems = dbData.items.filter(item => item.type === 'task' && item.completed);
+  } else {
+    const folder = dbData.folders.find(f => f.id === folderId);
+    if (!folder) {
+      switchView('home');
+      return;
+    }
+    listTitle = folder.name;
+    listColor = folder.color || '#0a84ff';
+    filteredItems = dbData.items.filter(item => item.folderId === folderId);
+  }
+
+  if (titleEl) {
+    titleEl.textContent = listTitle;
+    titleEl.style.color = listColor;
+  }
+  if (navTitle) {
+    navTitle.textContent = listTitle;
+  }
+
+  const count = filteredItems.length;
+  let subtitleText = '';
+  if (count === 1) subtitleText = '1 напоминание';
+  else if (count > 1 && count < 5) subtitleText = `${count} напоминания`;
+  else subtitleText = `${count} напоминаний`;
+  subtitleEl.textContent = subtitleText;
+
+  if (count === 0) {
+    container.innerHTML = '<div style="color: #8e8e93; text-align: center; padding: 40px 16px; font-style: italic; font-size: 0.9rem;">Нет напоминаний</div>';
+    return;
+  }
+
+  filteredItems.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'ios-settings-row';
+    row.style.alignItems = 'flex-start';
+    row.style.gap = '12px';
+    row.style.minHeight = 'auto';
+    row.style.padding = '12px 16px';
+    row.setAttribute('data-id', item.id);
+
+    const chk = document.createElement('button');
+    chk.className = `m-task-chk ${item.completed ? 'checked' : ''}`;
+    chk.style.width = '22px';
+    chk.style.height = '22px';
+    chk.style.borderRadius = '50%';
+    chk.style.border = `2px solid ${item.completed ? '#30d158' : '#3a3a3c'}`;
+    chk.style.background = item.completed ? '#30d158' : 'transparent';
+    chk.style.color = '#ffffff';
+    chk.style.display = 'flex';
+    chk.style.alignItems = 'center';
+    chk.style.justifyContent = 'center';
+    chk.style.fontSize = '0.75rem';
+    chk.style.cursor = 'pointer';
+    chk.style.flexShrink = '0';
+    chk.style.marginTop = '2px';
+    chk.innerHTML = item.completed ? '✓' : '';
+
+    chk.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      item.completed = !item.completed;
+      await window.api.database.save(dbData);
+      renderMobileFolderDetail(folderId);
+      renderTodayTasks();
+      if (activeFolderId) renderFolderView(activeFolderId);
+    });
+
+    const contentBox = document.createElement('div');
+    contentBox.style.flexGrow = '1';
+    contentBox.style.display = 'flex';
+    contentBox.style.flexDirection = 'column';
+    contentBox.style.gap = '4px';
+
+    const titleLabel = document.createElement('span');
+    titleLabel.textContent = item.title;
+    titleLabel.style.fontSize = '0.95rem';
+    titleLabel.style.fontWeight = '500';
+    titleLabel.style.color = '#ffffff';
+    if (item.completed) {
+      titleLabel.style.textDecoration = 'line-through';
+      titleLabel.style.color = '#8e8e93';
+    }
+
+    contentBox.appendChild(titleLabel);
+
+    if (item.description) {
+      const descLabel = document.createElement('span');
+      descLabel.textContent = item.description;
+      descLabel.style.fontSize = '0.82rem';
+      descLabel.style.color = '#8e8e93';
+      contentBox.appendChild(descLabel);
+    }
+
+    const metaBox = document.createElement('div');
+    metaBox.style.display = 'flex';
+    metaBox.style.flexWrap = 'wrap';
+    metaBox.style.gap = '8px';
+    metaBox.style.alignItems = 'center';
+    metaBox.style.marginTop = '4px';
+
+    if (item.dateTime) {
+      const dateLabel = document.createElement('span');
+      dateLabel.style.fontSize = '0.78rem';
+      dateLabel.style.color = isOverdue(item.dateTime, item.completed) ? '#ff453a' : '#8e8e93';
+      dateLabel.textContent = formatDisplayDate(item.dateTime);
+      metaBox.appendChild(dateLabel);
+    }
+
+    if (item.tagId) {
+      const tag = dbData.tags.find(t => t.id === item.tagId);
+      if (tag) {
+        const tagBadge = document.createElement('span');
+        tagBadge.style.fontSize = '0.75rem';
+        tagBadge.style.padding = '2px 6px';
+        tagBadge.style.borderRadius = '4px';
+        tagBadge.style.backgroundColor = tag.color + '1a';
+        tagBadge.style.color = tag.color;
+        tagBadge.style.fontWeight = '500';
+        tagBadge.textContent = tag.name;
+        metaBox.appendChild(tagBadge);
+      }
+    }
+
+    if (item.outcomeId) {
+      const outcome = dbData.outcomes.find(o => o.id === item.outcomeId);
+      if (outcome) {
+        const outBadge = document.createElement('span');
+        outBadge.style.fontSize = '0.75rem';
+        outBadge.style.padding = '2px 6px';
+        outBadge.style.borderRadius = '4px';
+        outBadge.style.backgroundColor = outcome.color + '1a';
+        outBadge.style.color = outcome.color;
+        outBadge.style.fontWeight = '500';
+        outBadge.textContent = outcome.name;
+        metaBox.appendChild(outBadge);
+      }
+    }
+
+    if (metaBox.children.length > 0) {
+      contentBox.appendChild(metaBox);
+    }
+
+    row.appendChild(chk);
+    row.appendChild(contentBox);
+
+    row.addEventListener('click', () => {
+      openDetailModal(item);
+    });
+
+    container.appendChild(row);
+  });
+}
+
+function renderMobileProfile() {
+  const tg = dbData.settings.telegram;
+  const isLinked = tg && tg.isLinked;
+
+  const statusValEl = document.getElementById('m-tg-status-val');
+  const usernameRow = document.getElementById('m-tg-username-row');
+  const usernameVal = document.getElementById('m-tg-username-val');
+  const chatIdRow = document.getElementById('m-tg-chatid-row');
+  const chatIdVal = document.getElementById('m-tg-chatid-val');
+
+  if (statusValEl) statusValEl.textContent = isLinked ? 'Подключен' : 'Отключен';
+  
+  if (isLinked) {
+    if (usernameRow) usernameRow.style.display = 'flex';
+    if (usernameVal) usernameVal.textContent = tg.username || '-';
+    if (chatIdRow) chatIdRow.style.display = 'flex';
+    if (chatIdVal) chatIdVal.textContent = tg.chatId || '-';
+  } else {
+    if (usernameRow) usernameRow.style.display = 'none';
+    if (chatIdRow) chatIdRow.style.display = 'none';
+  }
+
+  const morningTimeEl = document.getElementById('m-tg-morning-time');
+  const eveningTimeEl = document.getElementById('m-tg-evening-time');
+  const dbAccessEl = document.getElementById('m-chk-tg-db-access');
+
+  if (morningTimeEl) morningTimeEl.value = tg.tgMorningTime || '09:00';
+  if (eveningTimeEl) eveningTimeEl.value = tg.tgEveningTime || '21:00';
+  if (dbAccessEl) dbAccessEl.checked = tg.allowBotDbAccess !== false;
+
+  const unlinkBox = document.getElementById('m-tg-unlink-box');
+  const loginBox = document.getElementById('m-tg-login-box');
+
+  if (isLinked) {
+    if (unlinkBox) unlinkBox.style.display = 'flex';
+    if (loginBox) loginBox.style.display = 'none';
+  } else {
+    if (unlinkBox) unlinkBox.style.display = 'none';
+    if (loginBox) loginBox.style.display = 'block';
+  }
+}
+
+async function handleMobileTelegramConnect() {
+  const tokenInput = document.getElementById('m-tg-token-input');
+  if (!tokenInput) return;
+  const token = tokenInput.value.trim();
+  if (!token) {
+    showToast('Введите токен бота!', true);
+    return;
+  }
+  
+  stopTelegramBackgroundServices();
+  
+  const authCodeBox = document.getElementById('m-tg-auth-code-box');
+  const authCode = document.getElementById('m-tg-auth-code');
+  const deepLink = document.getElementById('m-tg-deep-link');
+
+  if (authCodeBox) authCodeBox.style.display = 'flex';
+  if (authCode) authCode.textContent = '...';
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/getMe`);
+    const data = await res.json();
+    
+    if (data.ok && data.result.username) {
+      const botUsername = data.result.username;
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      if (authCode) authCode.textContent = code;
+      if (deepLink) {
+        deepLink.href = `https://t.me/${botUsername}?start=${code}`;
+        deepLink.style.display = 'block';
+      }
+      
+      startHandshakePolling(token, code, botUsername);
+    } else {
+      throw new Error(data.description || 'Не удалось авторизовать токен.');
+    }
+  } catch (err) {
+    if (authCodeBox) authCodeBox.style.display = 'none';
+    isHandshakePollingActive = false;
+    console.error('Connection error:', err);
+    showToast(`Ошибка подключения к боту: ${err.message}`, true);
+  }
+}
+
+function renderMobileSettings() {
+  const tagsList = document.getElementById('m-tags-manager-list');
+  const outcomesList = document.getElementById('m-outcomes-manager-list');
+
+  if (tagsList) {
+    tagsList.innerHTML = '';
+    if (dbData.tags.length === 0) {
+      tagsList.innerHTML = '<div style="color: #8e8e93; text-align: center; padding: 20px; font-style: italic; font-size: 0.85rem;">Нет тегов</div>';
+    } else {
+      dbData.tags.forEach(tag => {
+        const row = document.createElement('div');
+        row.className = 'ios-settings-row';
+        row.style.flexDirection = 'column';
+        row.style.alignItems = 'stretch';
+        row.style.gap = '8px';
+
+        const mainRow = document.createElement('div');
+        mainRow.style.display = 'flex';
+        mainRow.style.alignItems = 'center';
+        mainRow.style.justifyContent = 'space-between';
+
+        const left = document.createElement('div');
+        left.style.display = 'flex';
+        left.style.alignItems = 'center';
+        left.style.gap = '8px';
+
+        const dot = document.createElement('span');
+        dot.style.display = 'inline-block';
+        dot.style.width = '12px';
+        dot.style.height = '12px';
+        dot.style.borderRadius = '50%';
+        dot.style.backgroundColor = tag.color;
+
+        const nameLabel = document.createElement('span');
+        nameLabel.textContent = tag.name;
+        nameLabel.style.fontSize = '0.95rem';
+
+        left.appendChild(dot);
+        left.appendChild(nameLabel);
+        mainRow.appendChild(left);
+
+        const actions = document.createElement('div');
+        actions.style.display = 'flex';
+        actions.style.gap = '12px';
+
+        const editBtn = document.createElement('button');
+        editBtn.style.background = 'none';
+        editBtn.style.border = 'none';
+        editBtn.style.cursor = 'pointer';
+        editBtn.textContent = '✏️';
+        editBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openTagEditModal(tag);
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.style.background = 'none';
+        delBtn.style.border = 'none';
+        delBtn.style.cursor = 'pointer';
+        delBtn.textContent = '🗑️';
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleDeleteTag(tag.id);
+        });
+
+        actions.appendChild(editBtn);
+        actions.appendChild(delBtn);
+        mainRow.appendChild(actions);
+        row.appendChild(mainRow);
+
+        const subtagsRow = document.createElement('div');
+        subtagsRow.style.display = 'flex';
+        subtagsRow.style.flexWrap = 'wrap';
+        subtagsRow.style.gap = '6px';
+        subtagsRow.style.paddingLeft = '20px';
+
+        tag.subtags.forEach(sub => {
+          const chip = document.createElement('span');
+          chip.className = 'subtag-chip-edit';
+          chip.style.display = 'inline-flex';
+          chip.style.alignItems = 'center';
+          chip.style.gap = '4px';
+          chip.style.fontSize = '0.78rem';
+          chip.style.backgroundColor = 'rgba(255,255,255,0.06)';
+          chip.style.padding = '2px 8px';
+          chip.style.borderRadius = '12px';
+          chip.textContent = sub;
+
+          const removeSub = document.createElement('button');
+          removeSub.style.background = 'none';
+          removeSub.style.border = 'none';
+          removeSub.style.color = '#ff453a';
+          removeSub.style.cursor = 'pointer';
+          removeSub.style.fontSize = '0.8rem';
+          removeSub.style.padding = '0';
+          removeSub.textContent = '×';
+          removeSub.addEventListener('click', () => {
+            handleRemoveSubtag(tag.id, sub);
+          });
+
+          chip.appendChild(removeSub);
+          subtagsRow.appendChild(chip);
+        });
+
+        const addSubBtn = document.createElement('button');
+        addSubBtn.style.background = 'none';
+        addSubBtn.style.border = 'none';
+        addSubBtn.style.color = '#0a84ff';
+        addSubBtn.style.fontSize = '0.78rem';
+        addSubBtn.style.cursor = 'pointer';
+        addSubBtn.textContent = '+ подтег';
+        addSubBtn.addEventListener('click', () => {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.placeholder = 'Имя';
+          input.style.fontSize = '0.78rem';
+          input.style.width = '60px';
+          input.style.background = 'rgba(255,255,255,0.1)';
+          input.style.border = 'none';
+          input.style.color = '#ffffff';
+          input.style.borderRadius = '4px';
+          input.style.padding = '2px 4px';
+          input.style.outline = 'none';
+
+          const saveSub = () => {
+            const val = input.value.trim();
+            if (val) {
+              if (!tag.subtags.includes(val)) {
+                tag.subtags.push(val);
+                saveData();
+                renderMobileSettings();
+                renderSettingsView();
+              } else {
+                showToast('Такой подтег уже существует!', true);
+                renderMobileSettings();
+              }
+            } else {
+              renderMobileSettings();
+            }
+          };
+
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') saveSub();
+            else if (e.key === 'Escape') renderMobileSettings();
+          });
+          input.addEventListener('blur', () => saveSub());
+          
+          addSubBtn.replaceWith(input);
+          input.focus();
+        });
+
+        subtagsRow.appendChild(addSubBtn);
+        row.appendChild(subtagsRow);
+
+        tagsList.appendChild(row);
+      });
+    }
+  }
+
+  if (outcomesList) {
+    outcomesList.innerHTML = '';
+    if (dbData.outcomes.length === 0) {
+      outcomesList.innerHTML = '<div style="color: #8e8e93; text-align: center; padding: 20px; font-style: italic; font-size: 0.85rem;">Нет исходов</div>';
+    } else {
+      dbData.outcomes.forEach(out => {
+        const row = document.createElement('div');
+        row.className = 'ios-settings-row';
+
+        const left = document.createElement('div');
+        left.style.display = 'flex';
+        left.style.alignItems = 'center';
+        left.style.gap = '8px';
+
+        const dot = document.createElement('span');
+        dot.style.display = 'inline-block';
+        dot.style.width = '12px';
+        dot.style.height = '12px';
+        dot.style.borderRadius = '50%';
+        dot.style.backgroundColor = out.color;
+
+        const nameLabel = document.createElement('span');
+        nameLabel.textContent = out.name;
+        nameLabel.style.fontSize = '0.95rem';
+
+        left.appendChild(dot);
+        left.appendChild(nameLabel);
+        row.appendChild(left);
+
+        const actions = document.createElement('div');
+        actions.style.display = 'flex';
+        actions.style.gap = '12px';
+
+        const editBtn = document.createElement('button');
+        editBtn.style.background = 'none';
+        editBtn.style.border = 'none';
+        editBtn.style.cursor = 'pointer';
+        editBtn.textContent = '✏️';
+        editBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openOutcomeEditModal(out);
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.style.background = 'none';
+        delBtn.style.border = 'none';
+        delBtn.style.cursor = 'pointer';
+        delBtn.textContent = '🗑️';
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleDeleteOutcome(out.id);
+        });
+
+        actions.appendChild(editBtn);
+        actions.appendChild(delBtn);
+        row.appendChild(actions);
+
+        outcomesList.appendChild(row);
+      });
+    }
+  }
+}
+
+function setupMobileSearch() {
+  const searchInput = document.getElementById('mobile-search-input');
+  if (!searchInput) return;
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.toLowerCase().trim();
+    const folderListContainer = document.getElementById('m-folders-list');
+    const headerTitle = document.querySelector('.ios-section-header');
+
+    if (!q) {
+      if (headerTitle) headerTitle.textContent = 'Мои списки';
+      renderMobileFolders();
+      return;
+    }
+
+    if (headerTitle) headerTitle.textContent = 'Результаты поиска';
+
+    const matches = dbData.items.filter(item => 
+      item.type === 'task' && 
+      (item.title.toLowerCase().includes(q) || (item.description && item.description.toLowerCase().includes(q)))
+    );
+
+    if (folderListContainer) {
+      folderListContainer.innerHTML = '';
+      if (matches.length === 0) {
+        folderListContainer.innerHTML = '<div style="color: #8e8e93; text-align: center; padding: 20px; font-style: italic; font-size: 0.85rem;">Ничего не найдено</div>';
+        return;
+      }
+
+      matches.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'ios-list-row';
+        row.style.justifyContent = 'flex-start';
+        row.style.gap = '12px';
+        
+        const dot = document.createElement('span');
+        dot.style.display = 'inline-block';
+        dot.style.width = '8px';
+        dot.style.height = '8px';
+        dot.style.borderRadius = '50%';
+        const folder = dbData.folders.find(f => f.id === item.folderId);
+        dot.style.backgroundColor = folder ? folder.color : '#8e8e93';
+        
+        const label = document.createElement('span');
+        label.className = 'ios-list-label';
+        label.textContent = item.title;
+        if (item.completed) {
+          label.style.textDecoration = 'line-through';
+          label.style.color = '#8e8e93';
+        }
+        
+        row.appendChild(dot);
+        row.appendChild(label);
+        
+        row.addEventListener('click', () => {
+          openDetailModal(item);
+        });
+
+        folderListContainer.appendChild(row);
+      });
+    }
   });
 }
 
@@ -2620,6 +3240,10 @@ function updateTelegramUI() {
     el.webServerLink.textContent = baseCloudUrl;
     el.webQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(finalCloudUrl)}`;
   }
+
+  // Refresh mobile screens
+  renderMobileProfile();
+  renderMobileHome();
 }
 
 async function handleTelegramConnect() {
@@ -2661,6 +3285,7 @@ async function handleTelegramConnect() {
 function renderSettingsView() {
   renderTagsSettings();
   renderOutcomesSettings();
+  renderMobileSettings();
 }
 
 // 1. Tags and Subtags Settings Editor
@@ -3415,38 +4040,107 @@ function setupEventListeners() {
     }
   });
 
-  // Mobile Tab navigation
-  document.querySelectorAll('.mobile-tab-item').forEach(btn => {
+  // Dedicated iOS Mobile Event Listeners
+  // 1. iOS Tab Bar
+  document.querySelectorAll('.ios-tab-item').forEach(btn => {
     btn.addEventListener('click', () => {
       const tabName = btn.dataset.tab;
-      if (tabName === 'folders') {
-        switchView('mobile-folders');
-      } else {
-        switchView(tabName);
-      }
+      switchView(tabName);
     });
   });
 
-  // Mobile Back button click
-  if (el.btnMobileBack) {
-    el.btnMobileBack.addEventListener('click', () => {
-      switchView('mobile-folders');
+  // 2. Mobile back button
+  const mobileNavLeftBtn = document.getElementById('mobile-nav-left-btn');
+  if (mobileNavLeftBtn) {
+    mobileNavLeftBtn.addEventListener('click', () => {
+      switchView('home');
     });
   }
 
-  // Mobile FAB button click (direct task creation sheet)
-  if (el.btnMobileFab) {
-    el.btnMobileFab.addEventListener('click', () => {
-      openDetailModal(null);
+  // 3. Widget clicks
+  const widgetToday = document.getElementById('m-widget-today');
+  if (widgetToday) {
+    widgetToday.addEventListener('click', () => switchView('folder', 'today'));
+  }
+  const widgetAll = document.getElementById('m-widget-all');
+  if (widgetAll) {
+    widgetAll.addEventListener('click', () => switchView('folder', 'all'));
+  }
+  const widgetCompleted = document.getElementById('m-widget-completed');
+  if (widgetCompleted) {
+    widgetCompleted.addEventListener('click', () => switchView('folder', 'completed'));
+  }
+  const widgetTelegram = document.getElementById('m-widget-telegram');
+  if (widgetTelegram) {
+    widgetTelegram.addEventListener('click', () => switchView('profile'));
+  }
+
+  // 4. Mobile footer buttons
+  const mBtnNewTask = document.getElementById('m-btn-new-task');
+  if (mBtnNewTask) {
+    mBtnNewTask.addEventListener('click', () => openDetailModal(null));
+  }
+  const mBtnAddList = document.getElementById('m-btn-add-list');
+  if (mBtnAddList) {
+    mBtnAddList.addEventListener('click', () => openFolderCreateModal());
+  }
+
+  // 5. Mobile profile settings actions
+  const mBtnTgConnect = document.getElementById('m-btn-tg-connect');
+  if (mBtnTgConnect) {
+    mBtnTgConnect.addEventListener('click', handleMobileTelegramConnect);
+  }
+  const mBtnTgUnlink = document.getElementById('m-btn-tg-unlink');
+  if (mBtnTgUnlink) {
+    mBtnTgUnlink.addEventListener('click', async () => {
+      if (await showConfirm('Вы уверены, что хотите отключить Telegram-бота?', 'Отключение Telegram-бота')) {
+        stopTelegramBackgroundServices();
+        dbData.settings.telegram.isLinked = false;
+        dbData.settings.telegram.token = '';
+        dbData.settings.telegram.chatId = '';
+        dbData.settings.telegram.username = '';
+        dbData.settings.telegram.lastUpdateId = 0;
+        await saveData();
+        updateTelegramUI();
+      }
     });
   }
 
-  // Mobile Folder add button click
-  if (el.btnMobileAddFolder) {
-    el.btnMobileAddFolder.addEventListener('click', () => {
-      openFolderCreateModal();
+  // Watch inputs
+  const mTgMorningTime = document.getElementById('m-tg-morning-time');
+  if (mTgMorningTime) {
+    mTgMorningTime.addEventListener('change', async () => {
+      dbData.settings.telegram.tgMorningTime = mTgMorningTime.value;
+      await saveData();
     });
   }
+  const mTgEveningTime = document.getElementById('m-tg-evening-time');
+  if (mTgEveningTime) {
+    mTgEveningTime.addEventListener('change', async () => {
+      dbData.settings.telegram.tgEveningTime = mTgEveningTime.value;
+      await saveData();
+    });
+  }
+  const mChkTgDbAccess = document.getElementById('m-chk-tg-db-access');
+  if (mChkTgDbAccess) {
+    mChkTgDbAccess.addEventListener('change', async () => {
+      dbData.settings.telegram.allowBotDbAccess = mChkTgDbAccess.checked;
+      await saveData();
+    });
+  }
+
+  // Mobile Tag and Outcome actions in settings
+  const mBtnAddTag = document.getElementById('m-btn-add-tag');
+  if (mBtnAddTag) {
+    mBtnAddTag.addEventListener('click', () => openTagEditModal());
+  }
+  const mBtnAddOutcome = document.getElementById('m-btn-add-outcome');
+  if (mBtnAddOutcome) {
+    mBtnAddOutcome.addEventListener('click', () => openOutcomeEditModal());
+  }
+
+  // Setup Mobile Search
+  setupMobileSearch();
 
   // Modal overlays click-to-dismiss setup
   const setupOverlayClose = (overlayEl) => {
