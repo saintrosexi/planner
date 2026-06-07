@@ -72,30 +72,68 @@ function downloadDbFromTelegram(token, chatId) {
   });
 }
 
-function uploadDbToTelegram(token, chatId, data) {
+async function uploadDbToTelegram(token, chatId, data) {
   const https = require('https');
+  
+  // 1. Check if there is an existing pinned message
+  let existingMessageId = null;
+  try {
+    const chatInfo = await telRequest(token, 'getChat', { chat_id: chatId });
+    if (chatInfo.ok && chatInfo.result.pinned_message) {
+      const pinned = chatInfo.result.pinned_message;
+      if (pinned.document && pinned.document.file_name === 'db.json') {
+        existingMessageId = pinned.message_id;
+      }
+    }
+  } catch (e) {
+    console.error('Error checking pinned message in Desktop main.js:', e);
+  }
+
   return new Promise((resolve) => {
     try {
       const dbContent = JSON.stringify(data, null, 2);
       const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
       
-      const payloadHeader = 
-        `--${boundary}\r\n` +
-        `Content-Disposition: form-data; name="chat_id"\r\n\r\n` +
-        `${chatId}\r\n` +
-        `--${boundary}\r\n` +
-        `Content-Disposition: form-data; name="document"; filename="db.json"\r\n` +
-        `Content-Type: application/json\r\n\r\n`;
+      let payloadHeader, sendUrl;
+      
+      if (existingMessageId) {
+        sendUrl = `https://api.telegram.org/bot${token}/editMessageMedia`;
+        const mediaJson = JSON.stringify({
+          type: 'document',
+          media: 'attach://db_file'
+        });
+        
+        payloadHeader = 
+          `--${boundary}\r\n` +
+          `Content-Disposition: form-data; name="chat_id"\r\n\r\n` +
+          `${chatId}\r\n` +
+          `--${boundary}\r\n` +
+          `Content-Disposition: form-data; name="message_id"\r\n\r\n` +
+          `${existingMessageId}\r\n` +
+          `--${boundary}\r\n` +
+          `Content-Disposition: form-data; name="media"\r\n\r\n` +
+          `${mediaJson}\r\n` +
+          `--${boundary}\r\n` +
+          `Content-Disposition: form-data; name="db_file"; filename="db.json"\r\n` +
+          `Content-Type: application/json\r\n\r\n`;
+      } else {
+        sendUrl = `https://api.telegram.org/bot${token}/sendDocument`;
+        payloadHeader = 
+          `--${boundary}\r\n` +
+          `Content-Disposition: form-data; name="chat_id"\r\n\r\n` +
+          `${chatId}\r\n` +
+          `--${boundary}\r\n` +
+          `Content-Disposition: form-data; name="document"; filename="db.json"\r\n` +
+          `Content-Type: application/json\r\n\r\n`;
+      }
       
       const payloadFooter = `\r\n--${boundary}--`;
       
       const headerBuffer = Buffer.from(payloadHeader, 'utf-8');
       const contentBuffer = Buffer.from(dbContent, 'utf-8');
       const footerBuffer = Buffer.from(payloadFooter, 'utf-8');
-      
       const totalPayload = Buffer.concat([headerBuffer, contentBuffer, footerBuffer]);
       
-      const sendUrl = `https://api.telegram.org/bot${token}/sendDocument`;
       const reqOptions = {
         method: 'POST',
         headers: {
@@ -104,30 +142,65 @@ function uploadDbToTelegram(token, chatId, data) {
         }
       };
       
-      const tReq = https.request(sendUrl, reqOptions, (tRes) => {
-        let responseData = '';
-        tRes.on('data', chunk => { responseData += chunk; });
-        tRes.on('end', async () => {
-          try {
-            const resData = JSON.parse(responseData);
-            if (resData.ok) {
-              const messageId = resData.result.message_id;
-              await telRequest(token, 'pinChatMessage', {
-                chat_id: chatId,
-                message_id: messageId,
-                disable_notification: true
-              });
+      const executeRequest = (url, options, payloadBuffer, isFallback = false) => {
+        const tReq = https.request(url, options, (tRes) => {
+          let responseData = '';
+          tRes.on('data', chunk => { responseData += chunk; });
+          tRes.on('end', async () => {
+            try {
+              const resData = JSON.parse(responseData);
+              if (resData.ok) {
+                if (!existingMessageId || isFallback) {
+                  const messageId = resData.result.message_id;
+                  await telRequest(token, 'pinChatMessage', {
+                    chat_id: chatId,
+                    message_id: messageId,
+                    disable_notification: true
+                  });
+                }
+                resolve(true);
+              } else {
+                if (existingMessageId && !isFallback) {
+                  // Fallback to sending new document
+                  const fallbackBoundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
+                  const fallbackHeader = 
+                    `--${fallbackBoundary}\r\n` +
+                    `Content-Disposition: form-data; name="chat_id"\r\n\r\n` +
+                    `${chatId}\r\n` +
+                    `--${fallbackBoundary}\r\n` +
+                    `Content-Disposition: form-data; name="document"; filename="db.json"\r\n` +
+                    `Content-Type: application/json\r\n\r\n`;
+                  const fallbackFooter = `\r\n--${fallbackBoundary}--`;
+                  
+                  const fHeaderBuffer = Buffer.from(fallbackHeader, 'utf-8');
+                  const fFooterBuffer = Buffer.from(fallbackFooter, 'utf-8');
+                  const fTotalPayload = Buffer.concat([fHeaderBuffer, contentBuffer, fFooterBuffer]);
+                  
+                  const fSendUrl = `https://api.telegram.org/bot${token}/sendDocument`;
+                  const fReqOptions = {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': `multipart/form-data; boundary=${fallbackBoundary}`,
+                      'Content-Length': fTotalPayload.length
+                    }
+                  };
+                  executeRequest(fSendUrl, fReqOptions, fTotalPayload, true);
+                } else {
+                  resolve(false);
+                }
+              }
+            } catch (e) {
+              resolve(false);
             }
-            resolve(true);
-          } catch (e) {
-            resolve(false);
-          }
+          });
         });
-      });
+        
+        tReq.on('error', () => resolve(false));
+        tReq.write(payloadBuffer);
+        tReq.end();
+      };
       
-      tReq.on('error', () => resolve(false));
-      tReq.write(totalPayload);
-      tReq.end();
+      executeRequest(sendUrl, reqOptions, totalPayload);
     } catch (e) {
       resolve(false);
     }
