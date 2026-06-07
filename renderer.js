@@ -1850,7 +1850,7 @@ function openDetailModal(itemToEdit = null) {
     const titleVal = el.editorTitle.value.trim();
     const descVal = el.editorDescription.value.trim();
     
-    if (window.innerWidth > 768 && !titleVal) return;
+    if (!isWebApp && window.innerWidth > 768 && !titleVal) return;
     
     let defaultFolderId = dbData.folders[0]?.id || '';
     if (activeView === 'folder' && activeFolderId) {
