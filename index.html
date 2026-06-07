@@ -30,9 +30,10 @@
 
   <!-- Mobile Header -->
   <div class="mobile-header">
-    <button id="btn-mobile-menu" class="mobile-menu-btn">☰</button>
-    <span class="mobile-title">Planner</span>
-    <div style="width: 32px;"></div>
+    <button id="btn-mobile-back" class="mobile-back-btn" style="display: none;">←</button>
+    <button id="btn-mobile-menu" class="mobile-menu-btn" style="display: none;">☰</button>
+    <span class="mobile-title" id="mobile-header-title">Planner</span>
+    <div class="mobile-header-right" id="mobile-header-action" style="width: 32px; display: flex; justify-content: flex-end; align-items: center;"></div>
   </div>
 
   <!-- App Wrapper -->
@@ -319,12 +320,26 @@
           </div>
         </div>
       </section>
+
+      <!-- Mobile Folders Explorer View -->
+      <section id="view-mobile-folders" class="view-panel">
+        <div class="panel-header" style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+            <h2 style="font-size: 1.8rem; font-weight: 700; margin: 0; background: linear-gradient(180deg, #ffffff 0%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Списки</h2>
+            <button id="btn-mobile-add-folder" class="primary-btn btn-sm" style="border-radius: 20px; padding: 6px 14px; font-weight: 600; font-size: 0.85rem;">+ Папка</button>
+          </div>
+        </div>
+        <div id="mobile-folders-list" class="mobile-folders-list">
+          <!-- Dynamic folders list for mobile -->
+        </div>
+      </section>
     </main>
   </div>
 
   <!-- Detail Dialog / Modal -->
   <div id="modal-detail" class="modal-overlay">
     <div class="modal-card">
+      <div class="sheet-handle"></div>
       <div class="modal-header">
         <h3 id="modal-title-label">Детализация элемента</h3>
         <button id="modal-close" class="modal-close-btn">&times;</button>
@@ -385,6 +400,7 @@
   <!-- Create Folder Modal -->
   <div id="modal-folder" class="modal-overlay">
     <div class="modal-card mini">
+      <div class="sheet-handle"></div>
       <div class="modal-header">
         <h3 id="folder-modal-title">Создание папки</h3>
         <button id="modal-folder-close" class="modal-close-btn">&times;</button>
@@ -445,6 +461,7 @@
   <!-- Create Tag Modal -->
   <div id="modal-tag-create" class="modal-overlay">
     <div class="modal-card mini">
+      <div class="sheet-handle"></div>
       <div class="modal-header">
         <h3 id="tag-modal-title">Создание тега</h3>
         <button id="modal-tag-close" class="modal-close-btn">&times;</button>
@@ -472,6 +489,7 @@
   <!-- Add Outcome Modal -->
   <div id="modal-outcome" class="modal-overlay">
     <div class="modal-card mini">
+      <div class="sheet-handle"></div>
       <div class="modal-header">
         <h3 id="outcome-modal-title">Создать исход</h3>
         <button id="modal-outcome-close" class="modal-close-btn">&times;</button>
@@ -499,6 +517,7 @@
   <!-- Quick Outcome Selection Modal (Assign outcome to item in folder list) -->
   <div id="modal-quick-outcome" class="modal-overlay">
     <div class="modal-card mini">
+      <div class="sheet-handle"></div>
       <div class="modal-header">
         <h3>Присвоить исход</h3>
         <button id="modal-quick-outcome-close" class="modal-close-btn">&times;</button>
@@ -518,6 +537,7 @@
   <!-- Quick Folder Selection Modal (for quick save) -->
   <div id="modal-quick-folder" class="modal-overlay">
     <div class="modal-card mini">
+      <div class="sheet-handle"></div>
       <div class="modal-header">
         <h3>Выберите папку для сохранения</h3>
         <button id="modal-quick-folder-close" class="modal-close-btn">&times;</button>
@@ -533,6 +553,7 @@
   <!-- Custom Confirmation Modal -->
   <div id="modal-confirm" class="modal-overlay">
     <div class="modal-card mini">
+      <div class="sheet-handle"></div>
       <div class="modal-header">
         <h3 id="confirm-modal-title">Подтверждение</h3>
         <button id="modal-confirm-close" class="modal-close-btn">&times;</button>
@@ -606,6 +627,29 @@
       </div>
     </div>
   </div>
+
+  <!-- Mobile Floating Add Button -->
+  <button id="btn-mobile-fab" class="mobile-fab" style="display: none;">+</button>
+
+  <!-- Mobile Bottom Tab Bar -->
+  <nav class="mobile-tab-bar" style="display: none;">
+    <button class="mobile-tab-item active" data-tab="editor">
+      <span class="tab-icon">📥</span>
+      <span class="tab-label">Сегодня</span>
+    </button>
+    <button class="mobile-tab-item" data-tab="folders">
+      <span class="tab-icon">📂</span>
+      <span class="tab-label">Списки</span>
+    </button>
+    <button class="mobile-tab-item" data-tab="profile">
+      <span class="tab-icon">🤖</span>
+      <span class="tab-label">Бот</span>
+    </button>
+    <button class="mobile-tab-item" data-tab="settings">
+      <span class="tab-icon">⚙️</span>
+      <span class="tab-label">Настройки</span>
+    </button>
+  </nav>
 
   <!-- Copy Notification Bubble -->
   <div id="copy-toast" class="copy-toast">Скопировано в буфер обмена!</div>

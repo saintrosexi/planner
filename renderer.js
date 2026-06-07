@@ -179,6 +179,12 @@ const el = {
   viewFolder: document.getElementById('view-folder'),
   viewProfile: document.getElementById('view-profile'),
   viewSettings: document.getElementById('view-settings'),
+  viewMobileFolders: document.getElementById('view-mobile-folders'),
+  mobileFoldersList: document.getElementById('mobile-folders-list'),
+  btnMobileAddFolder: document.getElementById('btn-mobile-add-folder'),
+  btnMobileBack: document.getElementById('btn-mobile-back'),
+  mobileHeaderTitle: document.getElementById('mobile-header-title'),
+  btnMobileFab: document.getElementById('btn-mobile-fab'),
   
   // Editor
   editorTitle: document.getElementById('editor-title'),
@@ -460,9 +466,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const systemCard = el.chkAutostart.closest('.settings-card');
     if (systemCard) systemCard.style.display = 'none';
     
-    // Hide global shortcut setting group on Web
-    const globalShortcutGroup = document.getElementById('global-shortcut-group');
-    if (globalShortcutGroup) globalShortcutGroup.style.display = 'none';
+    // Hide keybindings card on Web
+    const keybindingsCard = el.bindNewline.closest('.settings-card');
+    if (keybindingsCard) keybindingsCard.style.display = 'none';
     
     const token = localStorage.getItem('tg_bot_token');
     const chatId = localStorage.getItem('tg_chat_id');
@@ -665,30 +671,62 @@ function switchView(viewName, folderId = '') {
     if (fBtn) fBtn.classList.add('active');
   }
   
+  // Toggle active class on mobile tab bar items
+  document.querySelectorAll('.mobile-tab-item').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.tab === viewName) {
+      btn.classList.add('active');
+    } else if ((viewName === 'folder' || viewName === 'mobile-folders') && btn.dataset.tab === 'folders') {
+      btn.classList.add('active');
+    }
+  });
+  
   // Toggle view panels
   el.viewEditor.classList.remove('active');
   el.viewFolder.classList.remove('active');
   el.viewProfile.classList.remove('active');
   el.viewSettings.classList.remove('active');
+  if (el.viewMobileFolders) el.viewMobileFolders.classList.remove('active');
+  
+  // Header and Floating Action Button (FAB) config for mobile
+  if (el.btnMobileBack) el.btnMobileBack.style.display = 'none';
+  if (el.btnMobileFab) el.btnMobileFab.style.display = 'none';
   
   if (viewName === 'editor') {
     el.viewEditor.classList.add('active');
     el.editorTitle.focus();
     renderTodayTasks();
+    if (el.mobileHeaderTitle) el.mobileHeaderTitle.textContent = formatRussianTodayHeader();
+    if (el.btnMobileFab) el.btnMobileFab.style.display = (window.innerWidth <= 768) ? 'flex' : 'none';
   } else if (viewName === 'folder') {
     el.viewFolder.classList.add('active');
     renderFolderView(folderId);
+    if (el.btnMobileBack) el.btnMobileBack.style.display = 'block';
+    if (el.mobileHeaderTitle) {
+      const folder = dbData.folders.find(f => f.id === folderId);
+      el.mobileHeaderTitle.textContent = folder ? folder.name : 'Папка';
+    }
+    if (el.btnMobileFab) el.btnMobileFab.style.display = (window.innerWidth <= 768) ? 'flex' : 'none';
+  } else if (viewName === 'mobile-folders') {
+    if (el.viewMobileFolders) el.viewMobileFolders.classList.add('active');
+    renderMobileFolders();
+    if (el.mobileHeaderTitle) el.mobileHeaderTitle.textContent = 'Списки';
   } else if (viewName === 'profile') {
     el.viewProfile.classList.add('active');
     updateTelegramUI();
+    if (el.mobileHeaderTitle) el.mobileHeaderTitle.textContent = 'Профиль';
   } else if (viewName === 'settings') {
     el.viewSettings.classList.add('active');
     renderSettingsView();
+    if (el.mobileHeaderTitle) el.mobileHeaderTitle.textContent = 'Настройки';
   }
 }
 
-// --- Sidebar Render ---
+// --- Sidebar Render & Mobile Folder Explorer Render ---
 function renderSidebar() {
+  // Sync mobile lists as well
+  renderMobileFolders();
+
   el.foldersList.innerHTML = '';
   
   if (dbData.folders.length === 0) {
@@ -729,6 +767,70 @@ function renderSidebar() {
     
     el.foldersList.appendChild(btn);
   });
+}
+
+function renderMobileFolders() {
+  const container = el.mobileFoldersList;
+  if (!container) return;
+  container.innerHTML = '';
+  
+  if (dbData.folders.length === 0) {
+    container.innerHTML = '<div style="color: var(--text-dark); text-align: center; padding: 40px 16px; font-style: italic; font-size: 0.9rem;">У вас пока нет папок. Нажмите кнопку + выше, чтобы создать папку.</div>';
+    return;
+  }
+  
+  dbData.folders.forEach(folder => {
+    const activeTasksCount = dbData.items.filter(item => item.folderId === folder.id && item.type === 'task' && !item.completed).length;
+    
+    const row = document.createElement('div');
+    row.className = 'ios-list-row';
+    row.setAttribute('data-id', folder.id);
+    
+    // Colored dot or icon
+    const iconContainer = document.createElement('div');
+    iconContainer.className = 'ios-list-icon-wrap';
+    iconContainer.style.backgroundColor = folder.color + '1a'; // 10% opacity
+    iconContainer.style.color = folder.color;
+    iconContainer.textContent = folder.icon || '📁';
+    
+    const label = document.createElement('span');
+    label.className = 'ios-list-label';
+    label.textContent = folder.name;
+    
+    const rightWrap = document.createElement('div');
+    rightWrap.className = 'ios-list-right';
+    
+    if (activeTasksCount > 0) {
+      const badge = document.createElement('span');
+      badge.className = 'ios-list-badge';
+      badge.textContent = activeTasksCount;
+      rightWrap.appendChild(badge);
+    }
+    
+    const chevron = document.createElement('span');
+    chevron.className = 'ios-list-chevron';
+    chevron.textContent = '›';
+    rightWrap.appendChild(chevron);
+    
+    row.appendChild(iconContainer);
+    row.appendChild(label);
+    row.appendChild(rightWrap);
+    
+    row.addEventListener('click', () => {
+      switchView('folder', folder.id);
+    });
+    
+    container.appendChild(row);
+}
+
+function formatRussianTodayHeader() {
+  const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+  const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+  const now = new Date();
+  const dayName = days[now.getDay()];
+  const dateNum = now.getDate();
+  const monthName = months[now.getMonth()];
+  return `${dayName}, ${dateNum} ${monthName}`;
 }
 
 // --- Copy & Toast Utility ---
@@ -868,8 +970,11 @@ function createItemCard(item) {
   title.className = 'item-title';
   title.innerHTML = renderMarkdown(item.title);
   
-  // Clicking title copies it
+  // Clicking title copies it (only on desktop)
   title.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768) {
+      return;
+    }
     e.stopPropagation();
     copyTextToClipboard(item.title, card);
   });
@@ -882,8 +987,11 @@ function createItemCard(item) {
     desc.className = 'item-description';
     desc.innerHTML = renderMarkdown(item.description);
     
-    // Clicking description copies it
+    // Clicking description copies it (only on desktop)
     desc.addEventListener('click', (e) => {
+      if (window.innerWidth <= 768) {
+        return;
+      }
       e.stopPropagation();
       copyTextToClipboard(item.description, card);
     });
@@ -999,9 +1107,14 @@ function createItemCard(item) {
     editBtn.style.opacity = '0.7';
     deleteBtn.style.opacity = '0.7';
   });
-  card.addEventListener('mouseleave', () => {
-    editBtn.style.opacity = '0';
-    deleteBtn.style.opacity = '0';
+  // Card-wide click for mobile viewports to open detail modal
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('.checkbox-container') || e.target.closest('.outcome-badge') || e.target.closest('.btn-outcome-action') || e.target.closest('.action-icon-btn')) {
+      return;
+    }
+    if (window.innerWidth <= 768) {
+      openDetailModal(item);
+    }
   });
   
   return card;
@@ -1059,7 +1172,10 @@ function renderFolderView(folderId) {
   // Render Item Cards
   el.folderItemsList.innerHTML = '';
   if (folderItems.length === 0) {
-    el.folderItemsList.innerHTML = '<div style="color: var(--text-dark); text-align: center; padding: 40px 0; font-style: italic;">Эта папка пока пуста. Введите задачу на главном экране.</div>';
+    const emptyMsg = window.innerWidth <= 768 
+      ? 'Эта папка пока пуста. Нажмите + в углу, чтобы добавить.'
+      : 'Эта папка пока пуста. Введите задачу на главном экране.';
+    el.folderItemsList.innerHTML = `<div style="color: var(--text-dark); text-align: center; padding: 40px 0; font-style: italic;">${emptyMsg}</div>`;
     return;
   }
   
@@ -1100,15 +1216,20 @@ function openDetailModal(itemToEdit = null) {
     tempItem = { ...itemToEdit, tags: [...itemToEdit.tags], subtags: [...itemToEdit.subtags] };
     el.modalDatetimeInput.value = tempItem.dateTime ? tempItem.dateTime.substring(0, 16) : '';
   } else {
-    // Mode: CREATE (From active inputs)
+    // Mode: CREATE (From active inputs, or empty FAB sheet on mobile)
     const titleVal = el.editorTitle.value.trim();
     const descVal = el.editorDescription.value.trim();
     
-    if (!titleVal) return;
+    if (window.innerWidth > 768 && !titleVal) return;
+    
+    let defaultFolderId = dbData.folders[0]?.id || '';
+    if (activeView === 'folder' && activeFolderId) {
+      defaultFolderId = activeFolderId;
+    }
     
     tempItem = {
       id: '',
-      folderId: dbData.folders[0]?.id || '',
+      folderId: defaultFolderId,
       type: 'record',
       title: titleVal,
       description: descVal,
@@ -3292,6 +3413,55 @@ function setupEventListeners() {
       }
     }
   });
+
+  // Mobile Tab navigation
+  document.querySelectorAll('.mobile-tab-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tabName = btn.dataset.tab;
+      if (tabName === 'folders') {
+        switchView('mobile-folders');
+      } else {
+        switchView(tabName);
+      }
+    });
+  });
+
+  // Mobile Back button click
+  if (el.btnMobileBack) {
+    el.btnMobileBack.addEventListener('click', () => {
+      switchView('mobile-folders');
+    });
+  }
+
+  // Mobile FAB button click (direct task creation sheet)
+  if (el.btnMobileFab) {
+    el.btnMobileFab.addEventListener('click', () => {
+      openDetailModal(null);
+    });
+  }
+
+  // Mobile Folder add button click
+  if (el.btnMobileAddFolder) {
+    el.btnMobileAddFolder.addEventListener('click', () => {
+      openFolderCreateModal();
+    });
+  }
+
+  // Modal overlays click-to-dismiss setup
+  const setupOverlayClose = (overlayEl) => {
+    if (!overlayEl) return;
+    overlayEl.addEventListener('click', (e) => {
+      if (e.target === overlayEl) {
+        overlayEl.classList.remove('active');
+      }
+    });
+  };
+  setupOverlayClose(el.modalDetail);
+  setupOverlayClose(el.modalFolder);
+  setupOverlayClose(el.modalTagCreate);
+  setupOverlayClose(el.modalOutcome);
+  setupOverlayClose(el.modalQuickOutcome);
+  setupOverlayClose(el.modalQuickFolder);
 }
 
 // --- Custom Context Menu Logic ---
