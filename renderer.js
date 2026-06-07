@@ -704,6 +704,10 @@ function switchView(viewName, folderId = '') {
   
   // 1. Desktop Nav & View Toggle
   document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+  el.viewEditor.classList.remove('active');
+  el.viewFolder.classList.remove('active');
+  el.viewProfile.classList.remove('active');
+  el.viewSettings.classList.remove('active');
   
   if (viewName === 'editor' || viewName === 'home') {
     el.navEditor.classList.add('active');
