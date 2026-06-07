@@ -441,12 +441,28 @@ async function initAppSequence() {
 document.addEventListener('DOMContentLoaded', async () => {
   if (isWebApp) {
     document.body.classList.add('web-app');
+    
+    // Auto-login from QR Code link
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
+    const urlChatId = urlParams.get('chatId');
+    if (urlToken && urlChatId) {
+      localStorage.setItem('tg_bot_token', urlToken);
+      localStorage.setItem('tg_chat_id', urlChatId);
+      // Clean query params from the URL address bar for security
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     el.btnDownloadDesktop.href = 'https://github.com/saintrosexi/planner/raw/main/dist/TaskCRMPlanner%20Setup%201.0.0.exe';
     el.btnDownloadDesktop.style.display = 'flex';
     el.cardWebAccess.style.display = 'none';
     
     const systemCard = el.chkAutostart.closest('.settings-card');
     if (systemCard) systemCard.style.display = 'none';
+    
+    // Hide global shortcut setting group on Web
+    const globalShortcutGroup = document.getElementById('global-shortcut-group');
+    if (globalShortcutGroup) globalShortcutGroup.style.display = 'none';
     
     const token = localStorage.getItem('tg_bot_token');
     const chatId = localStorage.getItem('tg_chat_id');
@@ -455,11 +471,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
   } else {
-    // Desktop Electron configuration
-    const cloudUrl = 'https://saintrosexi-planner.vercel.app';
-    el.webServerLink.href = cloudUrl;
-    el.webServerLink.textContent = cloudUrl;
-    el.webQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(cloudUrl)}`;
+    // Desktop Electron configuration (the actual generation is done dynamically in updateTelegramUI)
+    const baseCloudUrl = 'https://planner-one-khaki.vercel.app';
+    el.webServerLink.href = baseCloudUrl;
+    el.webServerLink.textContent = baseCloudUrl;
+    el.webQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(baseCloudUrl)}`;
     
     if (window.api.events.onDbUpdatedExternally) {
       window.api.events.onDbUpdatedExternally((newData) => {
@@ -2469,6 +2485,18 @@ function updateTelegramUI() {
     el.tgTokenInput.value = '';
     el.tgAuthCodeBox.style.display = 'none';
     navProfileLabel.textContent = 'Профиль Telegram';
+  }
+
+  // Update QR code on desktop to allow auto-login when scanned from mobile phone
+  if (!isWebApp) {
+    const baseCloudUrl = 'https://planner-one-khaki.vercel.app';
+    let finalCloudUrl = baseCloudUrl;
+    if (tg.isLinked && tg.token && tg.chatId) {
+      finalCloudUrl = `${baseCloudUrl}/?token=${encodeURIComponent(tg.token)}&chatId=${encodeURIComponent(tg.chatId)}`;
+    }
+    el.webServerLink.href = finalCloudUrl;
+    el.webServerLink.textContent = baseCloudUrl;
+    el.webQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(finalCloudUrl)}`;
   }
 }
 
