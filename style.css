@@ -2146,13 +2146,22 @@ body.web-app #mobile-app-root {
   gap: 12px;
 }
 
-/* Modal bottom sheets overrides inside query */
-.modal-overlay {
+/* Modal bottom sheets overrides inside mobile-app-root */
+#mobile-app-root .modal-overlay {
+  position: absolute !important;
+  z-index: 1000000 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: inherit !important;
   align-items: flex-end !important;
   padding: 0 !important;
 }
 
-.modal-card {
+#mobile-app-root .modal-card {
   width: 100% !important;
   max-width: 100% !important;
   border-radius: 20px 20px 0 0 !important;
@@ -2168,11 +2177,11 @@ body.web-app #mobile-app-root {
   transition: transform 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94) !important;
 }
 
-.modal-overlay.active .modal-card {
+#mobile-app-root .modal-overlay.active .modal-card {
   transform: translateY(0);
 }
 
-.sheet-handle {
+#mobile-app-root .sheet-handle {
   display: block !important;
   width: 36px;
   height: 5px;
@@ -2182,14 +2191,14 @@ body.web-app #mobile-app-root {
 }
 
 /* Form groups inside sheets look exactly like settings cells */
-.modal-card .form-group {
+#mobile-app-root .modal-card .form-group {
   background: rgba(255, 255, 255, 0.035) !important;
   border-radius: 12px !important;
   padding: 12px 16px !important;
   margin-bottom: 14px !important;
   border: 1px solid rgba(255, 255, 255, 0.04) !important;
 }
-.modal-card .form-group label {
+#mobile-app-root .modal-card .form-group label {
   font-size: 0.74rem !important;
   text-transform: uppercase !important;
   letter-spacing: 0.06em !important;
@@ -2198,9 +2207,9 @@ body.web-app #mobile-app-root {
   display: block !important;
   font-weight: 600 !important;
 }
-.modal-card .form-group input[type="text"],
-.modal-card .form-group input[type="datetime-local"],
-.modal-card .form-group textarea {
+#mobile-app-root .modal-card .form-group input[type="text"],
+#mobile-app-root .modal-card .form-group input[type="datetime-local"],
+#mobile-app-root .modal-card .form-group textarea {
   background: transparent !important;
   border: none !important;
   padding: 6px 0 0 0 !important;
@@ -2210,8 +2219,8 @@ body.web-app #mobile-app-root {
   border-radius: 0 !important;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
-.modal-card .form-group input:focus,
-.modal-card .form-group textarea:focus {
+#mobile-app-root .modal-card .form-group input:focus,
+#mobile-app-root .modal-card .form-group textarea:focus {
   box-shadow: none !important;
   outline: none !important;
 }
