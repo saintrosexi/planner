@@ -1,0 +1,7 @@
+node_modules/
+dist/
+db.json
+db.json.tmp
+.DS_Store
+*.log
+.vercel/

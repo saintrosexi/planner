@@ -1,0 +1,54 @@
+{
+  "name": "task-crm-planner",
+  "version": "1.0.0",
+  "description": "Minimalistic desktop Task & CRM Planner",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --windows"
+  },
+  "keywords": [
+    "tasks",
+    "planner",
+    "crm",
+    "electron"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.sanek.planner",
+    "productName": "TaskCRMPlanner",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Task & CRM Planner",
+      "runAfterFinish": true,
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico"
+    },
+    "files": [
+      "package.json",
+      "main.js",
+      "preload.js",
+      "database.js",
+      "index.html",
+      "style.css",
+      "renderer.js",
+      "icon.ico"
+    ]
+  }
+}

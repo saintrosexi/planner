@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Task & CRM Planner</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Custom Frameless Titlebar -->
+  <header class="titlebar">
+    <div class="titlebar-logo">
+      <span class="logo-emoji" style="font-size: 1.1rem; margin-right: 6px; line-height: 1; user-select: none;">⚡</span>
+      <span class="logo-text">Planner</span>
+    </div>
+    <div class="titlebar-drag-area"></div>
+    <div class="titlebar-controls">
+      <button id="btn-minimize" class="control-btn" title="Свернуть">
+        <svg viewBox="0 0 10 1"><rect width="10" height="1" fill="currentColor"/></svg>
+      </button>
+      <button id="btn-close" class="control-btn close-btn" title="Закрыть в трей">
+        <svg viewBox="0 0 10 10">
+          <path d="M0 0 L10 10 M10 0 L0 10" stroke="currentColor" stroke-width="1.2" fill="none"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Header -->
+  <div class="mobile-header">
+    <button id="btn-mobile-menu" class="mobile-menu-btn">☰</button>
+    <span class="mobile-title">Planner</span>
+    <div style="width: 32px;"></div>
+  </div>
+
+  <!-- App Wrapper -->
+  <div class="app-container">
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <button id="nav-editor" class="nav-item active">
+          <span class="nav-icon">✏️</span>
+          <span class="nav-label">Редактор</span>
+        </button>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- Folders Section -->
+      <div class="sidebar-section folders-section">
+        <div class="section-header">
+          <span>Папки</span>
+          <button id="btn-add-folder" class="add-btn" title="Создать папку">+</button>
+        </div>
+        <div id="folders-list" class="nav-list">
+          <!-- Dynamic folders list will be rendered here -->
+        </div>
+      </div>
+
+      <!-- Footer navigation -->
+      <div class="sidebar-footer">
+        <button id="nav-profile" class="nav-item">
+          <span class="nav-icon">🤖</span>
+          <span class="nav-label">Профиль Telegram</span>
+        </button>
+        <button id="nav-settings" class="nav-item">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">Настройки</span>
+        </button>
+        <a href="/download-installer" id="btn-download-desktop" class="nav-item download-desktop-btn" download style="display: none; text-decoration: none; align-items: center;">
+          <span class="nav-icon">📥</span>
+          <span class="nav-label">Скачать ПК версию</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="content-area">
+      <!-- Editor View (Main) -->
+      <section id="view-editor" class="view-panel active">
+        <div class="editor-container">
+          <div class="editor-paper">
+            <input type="text" id="editor-title" placeholder="О чем вы думаете?..." autofocus autocomplete="off" />
+            <textarea id="editor-description" placeholder="Добавить описание..." autocomplete="off" rows="3"></textarea>
+            
+            <div class="editor-tip">
+              <span class="key-badge">Enter</span> — сохранить / настроить, <span class="key-badge" id="badge-newline">Shift + Enter</span> — описание
+            </div>
+          </div>
+
+          <!-- Upcoming tasks for today -->
+          <div class="today-tasks-container">
+            <h3 class="today-title">Задачи на сегодня</h3>
+            <div id="today-tasks-list" class="tasks-list-simple">
+              <!-- Dynamically populated today tasks -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Folder View -->
+      <section id="view-folder" class="view-panel">
+        <div class="folder-header">
+          <div class="folder-title-row">
+            <span id="folder-view-icon" class="folder-view-icon">📂</span>
+            <h2 id="folder-view-name" class="folder-view-name">Папка</h2>
+            <button id="btn-delete-folder" class="danger-icon-btn" title="Удалить папку">🗑️</button>
+          </div>
+          <!-- Stats block -->
+          <div class="folder-stats">
+            <div class="stat-card">
+              <span class="stat-value" id="stat-total">0</span>
+              <span class="stat-label">Всего</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="stat-today">0</span>
+              <span class="stat-label">Сегодня</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-value" id="stat-tomorrow">0</span>
+              <span class="stat-label">Завтра</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="items-list-container">
+          <div id="folder-items-list" class="folder-items-list">
+            <!-- Dynamically populated tasks/records in active folder -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Profile View -->
+      <section id="view-profile" class="view-panel">
+        <div class="panel-header">
+          <h2>Профиль Telegram</h2>
+          <p class="panel-subtitle">Интеграция с локальным Telegram-ботом для сбора задач на лету.</p>
+        </div>
+
+        <div class="profile-card card">
+          <!-- Bot not connected -->
+          <div id="tg-disconnected-section" class="profile-section">
+            <div class="mini-guide">
+              <h4>Как запустить вашего бота:</h4>
+              <ol>
+                <li>Откройте Telegram и найдите <a href="https://t.me/BotFather" target="_blank" class="tg-link">@BotFather</a></li>
+                <li>Отправьте команду <code>/newbot</code> и выберите имя и username бота.</li>
+                <li>Скопируйте полученный <strong>API Token</strong> и вставьте его ниже.</li>
+              </ol>
+            </div>
+
+            <div class="form-group">
+              <label for="tg-token-input">API Token бота</label>
+              <div class="input-action-row">
+                <input type="text" id="tg-token-input" placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ" autocomplete="off" />
+                <button id="btn-tg-connect" class="primary-btn">Подключить</button>
+              </div>
+            </div>
+
+            <div id="tg-auth-code-box" class="tg-code-box" style="display: none;">
+              <span class="code-label">Ваш проверочный код (кликните для копирования):</span>
+              <div class="code-value" id="tg-auth-code" style="cursor: pointer;" title="Копировать код">------</div>
+              <p class="code-instruction">Отправьте этот код вашему боту в Telegram, либо нажмите кнопку ниже для быстрого перехода.</p>
+              <div id="tg-deep-link-box" style="margin-top: 10px; width: 100%;">
+                <!-- Will be dynamically updated to t.me/botname?start=code -->
+                <a id="tg-deep-link" href="#" target="_blank" class="primary-btn" style="text-decoration: none; display: inline-block; width: 100%; text-align: center;">⚡ Перейти к боту в Telegram</a>
+              </div>
+              <div class="loading-spinner" style="margin-top: 10px;">Ожидание сообщения от бота...</div>
+            </div>
+          </div>
+
+          <!-- Bot connected -->
+          <div id="tg-connected-section" class="profile-section" style="display: none;">
+            <div class="tg-status-indicator success">
+              <span class="indicator-dot"></span>
+              <span>Telegram-бот успешно подключен</span>
+            </div>
+            <div class="tg-linked-details">
+              <p>Связанный аккаунт: <strong id="tg-linked-username">-</strong></p>
+              <p>ID чата: <strong id="tg-linked-chat-id">-</strong></p>
+              
+              <!-- Time configuration for morning and evening digests -->
+              <div class="form-group-grid" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="form-group">
+                  <label for="tg-morning-time" style="font-size: 0.72rem; color: var(--text-muted);">Дайджест (утро)</label>
+                  <input type="time" id="tg-morning-time" value="09:00" style="padding: 6px 10px; font-size: 0.85rem;" />
+                </div>
+                <div class="form-group">
+                  <label for="tg-evening-time" style="font-size: 0.72rem; color: var(--text-muted);">Отчет (вечер)</label>
+                  <input type="time" id="tg-evening-time" value="21:00" style="padding: 6px 10px; font-size: 0.85rem;" />
+                </div>
+              </div>
+
+              <!-- Database Access toggle for Telegram Bot -->
+              <div class="form-group" style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="chk-tg-db-access" style="width: auto; margin: 0;" />
+                <label for="chk-tg-db-access" style="font-size: 0.82rem; cursor: pointer; color: var(--text-main); user-select: none;">Разрешить боту управление и просмотр моих задач</label>
+              </div>
+
+              <p class="note" style="margin-top: 15px;"><strong>Бот успешно подключен!</strong> Вы будете получать утренние дайджесты задач, вечерние отчеты о проделанной работе, а также напоминания за 30 и 5 минут до времени выполнения задачи.</p>
+              <p class="note" style="border-top: none; padding-top: 0; margin-top: 0;">Бот принимает новые задачи на лету. Каждое отправленное ему сообщение автоматически сохраняется во «Входящие».</p>
+              <p class="note" style="border-top: none; padding-top: 0; margin-top: 0;">Вы можете проверить статус связи в чате командами <code>/ping</code>, <code>/status</code> или <code>/test</code>.</p>
+            </div>
+            <div class="input-action-row" style="margin-top: 20px; gap: 12px;">
+              <button id="btn-tg-test" class="secondary-btn" style="flex: 1;">🔔 Отправить тест</button>
+              <button id="btn-tg-unlink" class="danger-btn" style="flex: 1;">Отвязать бота</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings View -->
+      <section id="view-settings" class="view-panel">
+        <div class="panel-header">
+          <h2>Настройки приложения</h2>
+        </div>
+
+        <div class="settings-grid">
+          <!-- Column 1: Tags & Outcomes -->
+          <div class="settings-column">
+            <!-- Tags Card -->
+            <div class="card settings-card">
+              <div class="card-header">
+                <h3>Управление тегами и подтегами</h3>
+                <button id="btn-add-tag" class="small-btn">+</button>
+              </div>
+              <div id="tags-manager-list" class="tags-manager-list">
+                <!-- Dynamic tag list with subtags edit -->
+              </div>
+            </div>
+
+            <!-- Outcomes Card -->
+            <div class="card settings-card">
+              <div class="card-header">
+                <h3>Управление исходами (CRM)</h3>
+                <button id="btn-add-outcome" class="small-btn">+</button>
+              </div>
+              <div id="outcomes-manager-list" class="outcomes-manager-list">
+                <!-- Dynamic outcome list -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Keybinds & System -->
+          <div class="settings-column">
+            <!-- Keybindings -->
+            <div class="card settings-card">
+              <h3>Горячие клавиши</h3>
+              <div class="form-group-grid">
+                <div class="form-group">
+                  <label>Перенос строки (описание)</label>
+                  <div class="input-action-row">
+                    <input type="text" id="bind-newline" placeholder="Нажмите комбинацию..." readonly />
+                    <button id="btn-save-newline" class="primary-btn btn-sm">Задать</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Быстрое сохранение (выбор папки)</label>
+                  <div class="input-action-row">
+                    <input type="text" id="bind-save" placeholder="Нажмите комбинацию..." readonly />
+                    <button id="btn-save-save" class="primary-btn btn-sm">Задать</button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Глобальный вызов приложения</label>
+                  <div class="input-action-row">
+                    <input type="text" id="bind-global" placeholder="Нажмите комбинацию..." readonly />
+                    <button id="btn-save-global-shortcut" class="primary-btn btn-sm">Задать</button>
+                  </div>
+                  <span class="help-text">Пример: Alt+Shift+T. Записывает шорткат в ОС.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Data & System -->
+            <div class="card settings-card">
+              <h3>Система и данные</h3>
+              <div class="form-group" style="display: flex; flex-direction: column; gap: 10px;">
+                <label class="checkbox-row">
+                  <input type="checkbox" id="chk-autostart" />
+                  <span>Запускать Planner вместе с Windows</span>
+                </label>
+                <label class="checkbox-row">
+                  <input type="checkbox" id="chk-hide-to-tray" />
+                  <span>Сворачивать в трей при закрытии</span>
+                </label>
+              </div>
+              <div class="db-path-box">
+                <span class="db-path-label">Путь к базе данных:</span>
+                <code id="db-path-text">Загрузка...</code>
+              </div>
+              <div class="data-buttons-row">
+                <button id="btn-export-db" class="secondary-btn">📤 Экспорт БД</button>
+                <button id="btn-import-db" class="secondary-btn">📥 Импорт БД</button>
+              </div>
+            </div>
+
+            <!-- Mobile Web Access -->
+            <div class="card settings-card" id="card-web-access">
+              <h3>Мобильный веб-доступ</h3>
+              <p class="settings-desc" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; margin: 0;">
+                Planner развернут в облаке! Вы можете открыть планировщик на телефоне или любом другом устройстве через Vercel.
+              </p>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 8px;">
+                <div id="web-qr-container" style="background: white; padding: 10px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm);">
+                  <img id="web-qr-img" src="" alt="QR Code" style="width: 140px; height: 140px; display: block;" />
+                </div>
+                <div class="db-path-box" style="width: 100%; text-align: center; margin-top: 4px;">
+                  <a id="web-server-link" href="#" target="_blank" style="color: var(--accent); font-family: monospace; font-size: 0.95rem; font-weight: 600; text-decoration: none; word-break: break-all;">https://planner-two-tau.vercel.app</a>
+                </div>
+                <p class="help-text" style="font-size: 0.75rem; color: var(--text-muted); text-align: center; line-height: 1.4; margin: 0;">
+                  Войдите на мобильном, указав API Token вашего бота и отправив проверочный код.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Detail Dialog / Modal -->
+  <div id="modal-detail" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title-label">Детализация элемента</h3>
+        <button id="modal-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Title and Description (Editable) -->
+        <div class="form-group">
+          <label for="modal-title-input">Название *</label>
+          <input type="text" id="modal-title-input" placeholder="Название задачи..." autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label for="modal-desc-input">Описание</label>
+          <textarea id="modal-desc-input" placeholder="Описание задачи..." rows="3" style="width: 100%; resize: vertical; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); padding: 8px 12px; font-family: var(--font-main); outline: none; transition: border-color 0.2s;"></textarea>
+        </div>
+
+        <!-- Folder assignment (Required) -->
+        <div class="form-group">
+          <label>Папка *</label>
+          <div id="modal-folder-chips" class="folder-chips-container">
+            <!-- Dynamic folders options as buttons/chips -->
+          </div>
+        </div>
+
+        <!-- Date / Time Selection (Optional) -->
+        <div class="form-group">
+          <label>Планирование (если выбрано, будет Задачей, иначе — Записью)</label>
+          <div class="date-quick-buttons">
+            <button class="date-btn" data-time="today">Сегодня</button>
+            <button class="date-btn" data-time="tomorrow">Завтра</button>
+            <button class="date-btn" data-time="hour">Через час</button>
+            <button class="date-btn danger" id="btn-date-clear">Сбросить</button>
+          </div>
+          <div class="custom-date-picker-row">
+            <span class="icon">📅</span>
+            <input type="datetime-local" id="modal-datetime-input" />
+          </div>
+        </div>
+
+        <!-- Tags and Subtags Selection -->
+        <div class="form-group">
+          <label>Теги и подтеги</label>
+          <div id="modal-tags-container" class="modal-tags-container">
+            <!-- Dynamic tags checklist and subtag accordions -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <span class="type-hint" id="modal-type-hint">Сохранится как: Запись (лог)</span>
+        <div class="modal-actions">
+          <button id="modal-cancel-btn" class="secondary-btn">Отмена</button>
+          <button id="modal-save-btn" class="primary-btn">Сохранить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Folder Modal -->
+  <div id="modal-folder" class="modal-overlay">
+    <div class="modal-card mini">
+      <div class="modal-header">
+        <h3 id="folder-modal-title">Создание папки</h3>
+        <button id="modal-folder-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="folder-name-input">Название папки</label>
+          <input type="text" id="folder-name-input" placeholder="Например: Встречи" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label>Цвет папки</label>
+          <div class="color-palette" id="folder-color-palette">
+            <!-- Colors will be listed -->
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Иконка папки</label>
+          <div class="emoji-selector-container" style="position: relative; display: inline-block;">
+            <button type="button" id="btn-emoji-picker" class="emoji-picker-btn">📁</button>
+            <input type="hidden" id="folder-icon-input" value="📁" />
+            <div id="emoji-picker-popup" class="emoji-picker-popup">
+              <div class="emoji-grid">
+                <span class="emoji-item">📁</span>
+                <span class="emoji-item">💼</span>
+                <span class="emoji-item">📝</span>
+                <span class="emoji-item">📅</span>
+                <span class="emoji-item">📞</span>
+                <span class="emoji-item">🎯</span>
+                <span class="emoji-item">💰</span>
+                <span class="emoji-item">🤝</span>
+                <span class="emoji-item">💡</span>
+                <span class="emoji-item">🚀</span>
+                <span class="emoji-item">🛒</span>
+                <span class="emoji-item">✈️</span>
+                <span class="emoji-item">🏠</span>
+                <span class="emoji-item">🔥</span>
+                <span class="emoji-item">⭐</span>
+                <span class="emoji-item">🛠️</span>
+              </div>
+              <div style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap;">Свой:</span>
+                <input type="text" id="custom-emoji-input" placeholder="Вставьте эмодзи..." maxlength="2" style="flex: 1; padding: 4px 8px; font-size: 0.9rem; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-main); text-align: center; font-family: var(--font-main); outline: none;" autocomplete="off" />
+              </div>
+            </div>
+          </div>
+          <div class="type-hint" style="margin-top: 6px; font-size: 0.78rem; opacity: 0.6;">
+            💡 Можно открыть стандартную панель эмодзи: <span style="border: 1px solid var(--border-color); padding: 1px 4px; border-radius: 4px; background: rgba(255,255,255,0.05); font-family: monospace; font-size: 0.75rem;">Win + .</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-folder-cancel" class="secondary-btn">Отмена</button>
+        <button id="modal-folder-save" class="primary-btn">Создать</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Tag Modal -->
+  <div id="modal-tag-create" class="modal-overlay">
+    <div class="modal-card mini">
+      <div class="modal-header">
+        <h3 id="tag-modal-title">Создание тега</h3>
+        <button id="modal-tag-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="tag-edit-id" />
+        <div class="form-group">
+          <label for="tag-name-input">Название тега</label>
+          <input type="text" id="tag-name-input" placeholder="Звонки" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label>Цвет тега</label>
+          <div class="color-palette" id="tag-color-palette">
+            <!-- Colors -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-tag-cancel" class="secondary-btn">Отмена</button>
+        <button id="modal-tag-save" class="primary-btn">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Outcome Modal -->
+  <div id="modal-outcome" class="modal-overlay">
+    <div class="modal-card mini">
+      <div class="modal-header">
+        <h3 id="outcome-modal-title">Создать исход</h3>
+        <button id="modal-outcome-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="outcome-edit-id" />
+        <div class="form-group">
+          <label for="outcome-name-input">Название исхода</label>
+          <input type="text" id="outcome-name-input" placeholder="Согласие" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <label>Цвет исхода</label>
+          <div class="color-palette" id="outcome-color-palette">
+            <!-- Colors -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal-outcome-cancel" class="secondary-btn">Отмена</button>
+        <button id="modal-outcome-save" class="primary-btn">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Outcome Selection Modal (Assign outcome to item in folder list) -->
+  <div id="modal-quick-outcome" class="modal-overlay">
+    <div class="modal-card mini">
+      <div class="modal-header">
+        <h3>Присвоить исход</h3>
+        <button id="modal-quick-outcome-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="quick-outcome-item-id" />
+        <div class="outcome-select-list" id="quick-outcome-list">
+          <!-- Outcomes will be dynamically filled as buttons -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-quick-outcome-clear" class="danger-btn" style="width: 100%;">Убрать исход</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Folder Selection Modal (for quick save) -->
+  <div id="modal-quick-folder" class="modal-overlay">
+    <div class="modal-card mini">
+      <div class="modal-header">
+        <h3>Выберите папку для сохранения</h3>
+        <button id="modal-quick-folder-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="outcome-select-list" id="quick-folder-list">
+          <!-- Folders will be dynamically filled as buttons -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Confirmation Modal -->
+  <div id="modal-confirm" class="modal-overlay">
+    <div class="modal-card mini">
+      <div class="modal-header">
+        <h3 id="confirm-modal-title">Подтверждение</h3>
+        <button id="modal-confirm-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body" style="padding-top: 10px;">
+        <p id="confirm-modal-message" style="font-size: 1rem; color: var(--text-secondary); line-height: 1.5; margin: 0;"></p>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+        <button id="modal-confirm-cancel" class="secondary-btn">Отмена</button>
+        <button id="modal-confirm-ok" class="primary-btn">Да</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Context Menu -->
+  <div id="custom-context-menu" class="context-menu" style="display: none; position: absolute; z-index: 10000;">
+    <ul class="context-menu-list" id="context-menu-list"></ul>
+  </div>
+
+  <!-- Web Login Overlay -->
+  <div id="web-login-overlay" class="web-login-overlay" style="display: none;">
+    <div class="web-login-card">
+      <div class="web-login-header">
+        <span class="logo-emoji" style="font-size: 2rem; line-height: 1; user-select: none;">⚡</span>
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin: 4px 0 0 0;">Вход в Planner</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin: 4px 0 0 0;">Синхронизация через вашего Telegram-бота</p>
+      </div>
+      <div class="web-login-body" style="display: flex; flex-direction: column; gap: 16px;">
+        <!-- Login Method Selector -->
+        <div id="login-method-selector" style="display: flex; gap: 8px;">
+          <button id="btn-method-code" class="primary-btn btn-sm" style="flex: 1; justify-content: center;">Через код в боте</button>
+          <button id="btn-method-manual" class="secondary-btn btn-sm" style="flex: 1; justify-content: center;">Ввести ID вручную</button>
+        </div>
+
+        <!-- Token Entry -->
+        <div class="form-group" id="login-token-group" style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="login-token-input" style="font-size: 0.82rem; color: var(--text-muted);">API Token вашего Telegram-бота</label>
+          <input type="text" id="login-token-input" placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ" autocomplete="off" style="width: 100%;" />
+        </div>
+
+        <!-- Method 1: Code Verification Panel -->
+        <div id="login-method-code-panel" style="display: flex; flex-direction: column; gap: 12px;">
+          <button id="btn-login-get-code" class="primary-btn" style="width: 100%; justify-content: center;">Получить код</button>
+          
+          <div id="login-code-display-box" style="display: none; flex-direction: column; gap: 10px;">
+            <div class="mini-guide" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px;">
+              <h4 style="margin: 0 0 8px 0; font-size: 0.88rem; color: var(--text-main);">Отправьте боту этот код:</h4>
+              <div class="code-value" id="login-auth-code" style="cursor: pointer; text-align: center; font-size: 1.6rem; letter-spacing: 0.1em; font-family: monospace; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 6px; border: 1px dashed var(--border-color); color: var(--accent);" title="Копировать код">------</div>
+            </div>
+            <p class="code-instruction" style="font-size: 0.8rem; margin: 0; color: var(--text-muted); line-height: 1.4;">
+              Откройте ваш чат с ботом в Telegram и отправьте ему этот проверочный код.
+            </p>
+            <div id="login-deep-link-box" style="width: 100%;">
+              <a id="login-deep-link" href="#" target="_blank" class="primary-btn" style="text-decoration: none; display: inline-block; width: 100%; text-align: center; justify-content: center;">⚡ Перейти к боту в Telegram</a>
+            </div>
+            <div class="loading-spinner" id="login-polling-spinner" style="margin-top: 10px; font-size: 0.85rem; color: var(--text-muted); text-align: center;">Ожидание сообщения от бота...</div>
+          </div>
+        </div>
+
+        <!-- Method 2: Manual Entry Panel -->
+        <div id="login-method-manual-panel" style="display: none; flex-direction: column; gap: 12px;">
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="login-chatid-input" style="font-size: 0.82rem; color: var(--text-muted);">Ваш ID чата (Chat ID)</label>
+            <input type="text" id="login-chatid-input" placeholder="Например: 123456789" autocomplete="off" style="width: 100%;" />
+          </div>
+          <button id="btn-login-manual-submit" class="primary-btn" style="width: 100%; justify-content: center;">Войти</button>
+          <p class="help-text" style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin: 0;">
+            💡 Узнать ID чата можно в ПК-версии (Настройки -> Профиль Telegram) или отправив боту команду <code>/myid</code>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Copy Notification Bubble -->
+  <div id="copy-toast" class="copy-toast">Скопировано в буфер обмена!</div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
