@@ -336,10 +336,12 @@ ipcMain.handle('db-get', async () => {
   return localData;
 });
 
-ipcMain.handle('db-save', async (event, data) => {
-  data.updatedAt = Date.now(); // Conflict resolution timestamp
+ipcMain.handle('db-save', async (event, data, upload = true) => {
+  if (upload) {
+    data.updatedAt = Date.now(); // Conflict resolution timestamp
+  }
   const success = db.saveDatabase(data);
-  if (success) {
+  if (success && upload) {
     const tg = data.settings.telegram;
     if (tg && tg.isLinked && tg.token && tg.chatId && tg.allowBotDbAccess !== false) {
       uploadDbToTelegram(tg.token, tg.chatId, data).catch(err => {

@@ -4,7 +4,7 @@ contextBridge.exposeInMainWorld('api', {
   // Database API
   database: {
     get: () => ipcRenderer.invoke('db-get'),
-    save: (data) => ipcRenderer.invoke('db-save', data),
+    save: (data, upload) => ipcRenderer.invoke('db-save', data, upload),
     export: (destPath) => ipcRenderer.invoke('db-export', destPath),
     import: (srcPath) => ipcRenderer.invoke('db-import', srcPath),
     getPath: () => ipcRenderer.invoke('db-get-path')

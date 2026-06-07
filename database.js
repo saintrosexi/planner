@@ -12,10 +12,23 @@ const getDbPath = () => {
 };
 
 const getDefaultData = () => ({
-  folders: [],
+  folders: [
+    { id: 'inbox', name: 'Входящие', color: '#3b82f6', icon: '📥' },
+    { id: 'work', name: 'Работа', color: '#f97316', icon: '💼' },
+    { id: 'personal', name: 'Личное', color: '#10b981', icon: '👤' }
+  ],
   items: [],
-  tags: [],
-  outcomes: [],
+  tags: [
+    { id: 't1', name: 'Звонок', color: '#8b5cf6', subtags: ['Договорились', 'Перезвонить', 'Спам'] },
+    { id: 't2', name: 'Встреча', color: '#ec4899', subtags: ['Клиент', 'Команда', 'Личная'] },
+    { id: 't3', name: 'Срочно', color: '#ef4444', subtags: ['ASAP', 'Сегодня', 'До конца недели'] }
+  ],
+  outcomes: [
+    { id: 'o1', name: 'Согласие', color: '#10b981' },
+    { id: 'o2', name: 'Отказ', color: '#ef4444' },
+    { id: 'o3', name: 'Думает', color: '#eab308' },
+    { id: 'o4', name: 'Не дозвонился', color: '#6b7280' }
+  ],
   settings: {
     keybindings: {
       newline: 'Shift+Enter',

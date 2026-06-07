@@ -25,10 +25,14 @@ if (isWebApp) {
           return getDefaultDbTemplate();
         }
       },
-      save: async (data) => {
+      save: async (data, upload = true) => {
         const token = localStorage.getItem('tg_bot_token');
         const chatId = localStorage.getItem('tg_chat_id');
         if (!token || !chatId) return false;
+        
+        if (!upload) {
+          return true;
+        }
         
         data.updatedAt = Date.now(); // conflict resolution
         try {
@@ -84,10 +88,23 @@ if (isWebApp) {
 
 function getDefaultDbTemplate() {
   return {
-    folders: [],
+    folders: [
+      { id: 'inbox', name: 'Входящие', color: '#3b82f6', icon: '📥' },
+      { id: 'work', name: 'Работа', color: '#f97316', icon: '💼' },
+      { id: 'personal', name: 'Личное', color: '#10b981', icon: '👤' }
+    ],
     items: [],
-    tags: [],
-    outcomes: [],
+    tags: [
+      { id: 't1', name: 'Звонок', color: '#8b5cf6', subtags: ['Договорились', 'Перезвонить', 'Спам'] },
+      { id: 't2', name: 'Встреча', color: '#ec4899', subtags: ['Клиент', 'Команда', 'Личная'] },
+      { id: 't3', name: 'Срочно', color: '#ef4444', subtags: ['ASAP', 'Сегодня', 'До конца недели'] }
+    ],
+    outcomes: [
+      { id: 'o1', name: 'Согласие', color: '#10b981' },
+      { id: 'o2', name: 'Отказ', color: '#ef4444' },
+      { id: 'o3', name: 'Думает', color: '#eab308' },
+      { id: 'o4', name: 'Не дозвонился', color: '#6b7280' }
+    ],
     settings: {
       keybindings: {
         newline: 'Shift+Enter',
@@ -506,6 +523,39 @@ function updateUIFromExternalDB(newData) {
 // Load Database Data
 async function loadData() {
   dbData = await window.api.database.get();
+  
+  // Self-healing: restore defaults if folders are empty/missing (e.g. after database reset or sync error)
+  let healed = false;
+  if (!dbData.folders || dbData.folders.length === 0) {
+    dbData.folders = [
+      { id: 'inbox', name: 'Входящие', color: '#3b82f6', icon: '📥' },
+      { id: 'work', name: 'Работа', color: '#f97316', icon: '💼' },
+      { id: 'personal', name: 'Личное', color: '#10b981', icon: '👤' }
+    ];
+    healed = true;
+  }
+  if (!dbData.tags || dbData.tags.length === 0) {
+    dbData.tags = [
+      { id: 't1', name: 'Звонок', color: '#8b5cf6', subtags: ['Договорились', 'Перезвонить', 'Спам'] },
+      { id: 't2', name: 'Встреча', color: '#ec4899', subtags: ['Клиент', 'Команда', 'Личная'] },
+      { id: 't3', name: 'Срочно', color: '#ef4444', subtags: ['ASAP', 'Сегодня', 'До конца недели'] }
+    ];
+    healed = true;
+  }
+  if (!dbData.outcomes || dbData.outcomes.length === 0) {
+    dbData.outcomes = [
+      { id: 'o1', name: 'Согласие', color: '#10b981' },
+      { id: 'o2', name: 'Отказ', color: '#ef4444' },
+      { id: 'o3', name: 'Думает', color: '#eab308' },
+      { id: 'o4', name: 'Не дозвонился', color: '#6b7280' }
+    ];
+    healed = true;
+  }
+  
+  if (healed) {
+    await saveData();
+  }
+
   renderSidebar();
   renderTodayTasks();
   
@@ -1637,7 +1687,8 @@ async function startMessagePolling() {
           dbData.settings.telegram.lastUpdateId = messagePollOffset;
           await handleClientTelegramUpdate(update);
         }
-        await saveData();
+        // Save lastUpdateId locally, bypassing upload to prevent recursive loop
+        await window.api.database.save(dbData, false);
       }
       await new Promise(resolve => setTimeout(resolve, 500));
     } catch (error) {
