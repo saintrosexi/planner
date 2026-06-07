@@ -1689,52 +1689,9 @@ body.web-app .app-container {
   }
 }
 
-/* Force Mobile Layout on Web App (Vercel) */
-body.web-app .app-container,
-body.web-app .titlebar,
-body.web-app .mobile-header {
-  display: none !important;
-}
-body.web-app #mobile-app-root {
-  display: flex !important;
-}
-
-/* Premium iPhone Simulated Frame on Desktop Browser for Web App */
-@media (min-width: 769px) {
-  body.web-app {
-    background: radial-gradient(circle at center, #2c2c2e 0%, #0a0a0c 100%) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    height: 100vh !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-  }
-  body.web-app #mobile-app-root {
-    width: 410px !important;
-    height: 86vh !important;
-    max-height: 820px !important;
-    border-radius: 42px !important;
-    border: 12px solid #3a3a3c !important;
-    box-sizing: border-box !important;
-    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
-    position: relative !important;
-    top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
-    margin: auto !important;
-  }
-  body.web-app .ios-tab-bar {
-    position: absolute !important;
-    border-radius: 0 0 30px 30px !important;
-    left: 0 !important; right: 0 !important; bottom: 0 !important;
-  }
-  body.web-app .ios-nav-bar {
-    border-radius: 30px 30px 0 0 !important;
-  }
-}
-
 /* iOS Mobile Interface Styling (Universal) */
 #mobile-app-root {
+  display: none;
   flex-direction: column;
   height: 100vh;
   background-color: #000000; /* True iOS pure black background */
@@ -2146,83 +2103,84 @@ body.web-app #mobile-app-root {
   gap: 12px;
 }
 
-/* Modal bottom sheets overrides inside mobile-app-root */
-#mobile-app-root .modal-overlay {
-  position: absolute !important;
-  z-index: 1000000 !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  border-radius: inherit !important;
-  align-items: flex-end !important;
-  padding: 0 !important;
-}
+/* Modal bottom sheets overrides for mobile viewports */
+@media (max-width: 768px) {
+  .modal-overlay {
+    position: fixed !important;
+    z-index: 1000000 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
 
-#mobile-app-root .modal-card {
-  width: 100% !important;
-  max-width: 100% !important;
-  border-radius: 20px 20px 0 0 !important;
-  margin: 0 !important;
-  padding: 12px 18px 34px 18px !important;
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.4) !important;
-  border: none !important;
-  border-top: 1px solid var(--border-color) !important;
-  max-height: 85vh !important;
-  overflow-y: auto !important;
-  background-color: #1c1c1e !important; /* iOS sheet background */
-  transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94) !important;
-}
+  .modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    margin: 0 !important;
+    padding: 12px 18px 34px 18px !important;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.4) !important;
+    border: none !important;
+    border-top: 1px solid var(--border-color) !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+    background-color: #1c1c1e !important; /* iOS sheet background */
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94) !important;
+  }
 
-#mobile-app-root .modal-overlay.active .modal-card {
-  transform: translateY(0);
-}
+  .modal-overlay.active .modal-card {
+    transform: translateY(0) !important;
+  }
 
-#mobile-app-root .sheet-handle {
-  display: block !important;
-  width: 36px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
-  margin: 0 auto 16px auto;
-}
+  .sheet-handle {
+    display: block !important;
+    width: 36px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+    margin: 0 auto 16px auto;
+  }
 
-/* Form groups inside sheets look exactly like settings cells */
-#mobile-app-root .modal-card .form-group {
-  background: rgba(255, 255, 255, 0.035) !important;
-  border-radius: 12px !important;
-  padding: 12px 16px !important;
-  margin-bottom: 14px !important;
-  border: 1px solid rgba(255, 255, 255, 0.04) !important;
-}
-#mobile-app-root .modal-card .form-group label {
-  font-size: 0.74rem !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.06em !important;
-  color: #8e8e93 !important;
-  margin-bottom: 6px !important;
-  display: block !important;
-  font-weight: 600 !important;
-}
-#mobile-app-root .modal-card .form-group input[type="text"],
-#mobile-app-root .modal-card .form-group input[type="datetime-local"],
-#mobile-app-root .modal-card .form-group textarea {
-  background: transparent !important;
-  border: none !important;
-  padding: 6px 0 0 0 !important;
-  color: #ffffff !important;
-  font-size: 1rem !important;
-  width: 100% !important;
-  border-radius: 0 !important;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
-}
-#mobile-app-root .modal-card .form-group input:focus,
-#mobile-app-root .modal-card .form-group textarea:focus {
-  box-shadow: none !important;
-  outline: none !important;
+  /* Form groups inside sheets look exactly like settings cells */
+  .modal-card .form-group {
+    background: rgba(255, 255, 255, 0.035) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    margin-bottom: 14px !important;
+    border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  }
+  .modal-card .form-group label {
+    font-size: 0.74rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    color: #8e8e93 !important;
+    margin-bottom: 6px !important;
+    display: block !important;
+    font-weight: 600 !important;
+  }
+  .modal-card .form-group input[type="text"],
+  .modal-card .form-group input[type="datetime-local"],
+  .modal-card .form-group textarea {
+    background: transparent !important;
+    border: none !important;
+    padding: 6px 0 0 0 !important;
+    color: #ffffff !important;
+    font-size: 1rem !important;
+    width: 100% !important;
+    border-radius: 0 !important;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+  }
+  .modal-card .form-group input:focus,
+  .modal-card .form-group textarea:focus {
+    box-shadow: none !important;
+    outline: none !important;
+  }
 }
 
 /* Web Login Screen */

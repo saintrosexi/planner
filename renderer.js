@@ -488,11 +488,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (isWebApp) {
     document.body.classList.add('web-app');
     
-    // Relocate modal overlays inside mobile-app-root so they position correctly inside the phone container
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
-      el.mobileAppRoot.appendChild(modal);
-    });
-    
     // Auto-login from QR Code link
     const urlParams = new URLSearchParams(window.location.search);
     const urlToken = urlParams.get('token');
