@@ -821,6 +821,7 @@ function renderMobileFolders() {
     });
     
     container.appendChild(row);
+  });
 }
 
 function formatRussianTodayHeader() {
