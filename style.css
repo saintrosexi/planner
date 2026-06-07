@@ -1668,7 +1668,7 @@ body.web-app .app-container {
 /* Responsive Media Queries (Mobile & Tablets) */
 /* Mobile Viewport Toggle */
 @media (max-width: 768px) {
-  #app-container {
+  .app-container {
     display: none !important;
   }
   .titlebar {
@@ -1690,7 +1690,7 @@ body.web-app .app-container {
 }
 
 /* Force Mobile Layout on Web App (Vercel) */
-body.web-app #app-container,
+body.web-app .app-container,
 body.web-app .titlebar,
 body.web-app .mobile-header {
   display: none !important;
